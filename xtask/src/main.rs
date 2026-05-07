@@ -51,8 +51,11 @@ fn cmd_test() -> Result {
 }
 
 fn cmd_lint() -> Result {
-    cargo(&["clippy", "--workspace", "--", "-D", "warnings"])?;
-    cargo(&["fmt", "--all", "--check"])
+    run_cmd(
+        "cargo",
+        &["+stable", "clippy", "--workspace", "--", "-D", "warnings"],
+    )?;
+    run_cmd("cargo", &["+stable", "fmt", "--all", "--check"])
 }
 
 fn cmd_bump(level: &str) -> Result {

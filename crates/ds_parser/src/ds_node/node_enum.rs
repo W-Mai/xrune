@@ -24,9 +24,9 @@ impl Debug for DsNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             DsNode::Root(expr) => write!(f, "Root({:?})", expr.to_token_stream().to_string()),
-            DsNode::Widget(widget) => write!(f, "Widget({:?})", widget),
-            DsNode::If(if_node) => write!(f, "If({:?})", if_node),
-            DsNode::Iter(iter) => write!(f, "Iter({:?})", iter),
+            DsNode::Widget(widget) => write!(f, "Widget({widget:?})"),
+            DsNode::If(if_node) => write!(f, "If({if_node:?})"),
+            DsNode::Iter(iter) => write!(f, "Iter({iter:?})"),
         }
     }
 }
