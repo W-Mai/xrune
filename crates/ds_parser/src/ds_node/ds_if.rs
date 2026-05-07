@@ -11,6 +11,12 @@ pub struct DsIf {
     condition: syn::Expr,
 }
 
+impl DsIf {
+    pub fn get_condition(&self) -> &syn::Expr {
+        &self.condition
+    }
+}
+
 impl Debug for DsIf {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "If({:?})", self.condition.to_token_stream().to_string())

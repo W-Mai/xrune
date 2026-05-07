@@ -34,6 +34,10 @@ impl DsTree {
     pub fn get_node(&self) -> &DsNode {
         &self.node
     }
+
+    pub fn get_children(&self) -> &[DsTreeRef] {
+        &self.children
+    }
 }
 
 impl Debug for DsTree {

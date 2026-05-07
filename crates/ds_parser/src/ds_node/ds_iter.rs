@@ -11,6 +11,16 @@ pub struct DsIter {
     variable: syn::Ident,
 }
 
+impl DsIter {
+    pub fn get_iterable(&self) -> &syn::Expr {
+        &self.iterable
+    }
+
+    pub fn get_variable(&self) -> &syn::Ident {
+        &self.variable
+    }
+}
+
 impl Debug for DsIter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{{iterable: {:?}, variable: {:?}}}",
