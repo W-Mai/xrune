@@ -1,10 +1,10 @@
-use std::fmt::Debug;
-use quote::ToTokens;
-use syn::parse::{Parse, ParseStream};
 use super::ds_if::DsIf;
 use super::ds_iter::DsIter;
 use super::ds_traits::DsNodeIsMe;
 use super::ds_widget::DsWidget;
+use quote::ToTokens;
+use std::fmt::Debug;
+use syn::parse::{Parse, ParseStream};
 
 #[derive(Debug)]
 pub enum DsNodeType {
@@ -44,7 +44,6 @@ impl DsNodeType {
         }
     }
 }
-
 
 impl Parse for DsNode {
     fn parse(input: ParseStream) -> syn::Result<Self> {

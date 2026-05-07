@@ -1,7 +1,7 @@
-use std::fmt::Debug;
-use quote::ToTokens;
-use syn::parse::{Parse, ParseStream};
 use super::ds_traits::DsNodeIsMe;
+use quote::ToTokens;
+use std::fmt::Debug;
+use syn::parse::{Parse, ParseStream};
 
 pub struct DsIf {
     condition: syn::Expr,

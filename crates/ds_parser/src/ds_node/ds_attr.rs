@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use quote::{quote, ToTokens};
+use std::fmt::Debug;
 use syn::parse::{Parse, ParseStream};
 
 pub struct DsAttr {
@@ -10,7 +10,12 @@ pub struct DsAttr {
 impl Debug for DsAttr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let DsAttr { name, value } = self;
-        write!(f, "DsAttr {{ name: {}, value: {:?} }}", name, value.to_token_stream().to_string())
+        write!(
+            f,
+            "DsAttr {{ name: {}, value: {:?} }}",
+            name,
+            value.to_token_stream().to_string()
+        )
     }
 }
 

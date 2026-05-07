@@ -1,6 +1,6 @@
-use crate::ds_node::ds_node::DsNode;
-use crate::ds_node::DsTreeRef;
 use super::DsRune;
+use crate::ds_node::node_enum::DsNode;
+use crate::ds_node::DsTreeRef;
 
 /// Traverse a DsTree and invoke the appropriate DsRune methods.
 pub fn traverse(tree: &DsTreeRef, rune: &mut dyn DsRune) {
@@ -20,10 +20,7 @@ pub fn traverse(tree: &DsTreeRef, rune: &mut dyn DsRune) {
             );
         }
         DsNode::If(if_node) => {
-            rune.inscribe_if(
-                if_node.get_condition(),
-                borrowed.get_children(),
-            );
+            rune.inscribe_if(if_node.get_condition(), borrowed.get_children());
         }
         DsNode::Iter(iter_node) => {
             rune.inscribe_iter(

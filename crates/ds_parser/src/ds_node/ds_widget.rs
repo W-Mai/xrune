@@ -1,7 +1,7 @@
-use syn::parse::{Parse, ParseStream};
-use crate::ds_node::ds_custom_token::is_custom_keyword;
 use super::ds_attr::DsAttrs;
 use super::ds_traits::DsNodeIsMe;
+use crate::ds_node::ds_custom_token::is_custom_keyword;
+use syn::parse::{Parse, ParseStream};
 
 #[derive(Debug)]
 pub struct DsWidget {

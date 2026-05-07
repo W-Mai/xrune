@@ -1,5 +1,5 @@
-use proc_macros_inner::DsRef;
 use super::DsTreeRef;
+use proc_macros_inner::DsRef;
 
 #[derive(Debug, DsRef)]
 pub struct DsContext {
@@ -11,10 +11,7 @@ pub struct DsContext {
 impl DsContextRef {
     pub fn new(parent: Option<DsTreeRef>, tree: DsTreeRef) -> Self {
         DsContextRef {
-            inner: std::rc::Rc::new(std::cell::RefCell::new(DsContext {
-                parent,
-                tree,
-            })),
+            inner: std::rc::Rc::new(std::cell::RefCell::new(DsContext { parent, tree })),
         }
     }
 }
@@ -22,9 +19,6 @@ impl DsContextRef {
 #[allow(dead_code)]
 impl DsContext {
     pub fn new(parent: Option<DsTreeRef>, tree: DsTreeRef) -> Self {
-        DsContext {
-            parent,
-            tree,
-        }
+        DsContext { parent, tree }
     }
 }

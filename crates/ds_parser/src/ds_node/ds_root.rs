@@ -3,9 +3,9 @@ use std::ops::Deref;
 use syn::parse::{Parse, ParseStream};
 use syn::spanned::Spanned;
 
-use crate::ds_node::{DsTree, DsTreeRef};
-use crate::ds_node::ds_node::DsNode;
 use crate::ds_node::ds_attr::DsAttr;
+use crate::ds_node::node_enum::DsNode;
+use crate::ds_node::{DsTree, DsTreeRef};
 
 pub struct DsRoot {
     parent: syn::Expr,
@@ -64,7 +64,8 @@ impl Parse for DsRoot {
                     parent: None,
                     node: DsNode::Root(parent.clone()),
                     children: vec![],
-                }.into_ref()
+                }
+                .into_ref(),
             );
 
             Ok(DsRoot { parent, content })

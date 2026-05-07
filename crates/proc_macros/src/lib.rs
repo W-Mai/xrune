@@ -4,8 +4,8 @@ use proc_macro::TokenStream;
 use syn::parse_macro_input;
 
 use ds_parser::ds_node::DsRoot;
-use ds_parser::ds_rune::DsRune;
 use ds_parser::ds_rune::traverse::traverse;
+use ds_parser::ds_rune::DsRune;
 
 /// Default rune: generates println debug output (xwrapup style).
 struct DefaultRune {
@@ -61,11 +61,7 @@ impl DsRune for DefaultRune {
         self.parent_name = prev_parent;
     }
 
-    fn inscribe_if(
-        &mut self,
-        condition: &syn::Expr,
-        children: &[ds_parser::ds_node::DsTreeRef],
-    ) {
+    fn inscribe_if(&mut self, condition: &syn::Expr, children: &[ds_parser::ds_node::DsTreeRef]) {
         use quote::quote;
         let con = quote!(#condition).to_string();
         self.tokens.extend(quote! {

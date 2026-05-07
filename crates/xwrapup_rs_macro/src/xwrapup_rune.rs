@@ -12,6 +12,12 @@ pub struct XwrapupRune {
     parent_name: String,
 }
 
+impl Default for XwrapupRune {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl XwrapupRune {
     pub fn new() -> Self {
         Self {
@@ -30,12 +36,7 @@ impl DsRune for XwrapupRune {
         self.parent_name = "parent".to_string();
     }
 
-    fn inscribe_widget(
-        &mut self,
-        name: &syn::Ident,
-        attrs: &[DsAttr],
-        children: &[DsTreeRef],
-    ) {
+    fn inscribe_widget(&mut self, name: &syn::Ident, attrs: &[DsAttr], children: &[DsTreeRef]) {
         let name_string = name.to_string();
         let parent_name = &self.parent_name;
 
@@ -59,11 +60,7 @@ impl DsRune for XwrapupRune {
         self.parent_name = prev_parent;
     }
 
-    fn inscribe_if(
-        &mut self,
-        condition: &syn::Expr,
-        children: &[DsTreeRef],
-    ) {
+    fn inscribe_if(&mut self, condition: &syn::Expr, children: &[DsTreeRef]) {
         let con = quote!(#condition).to_string();
         self.tokens.extend(quote! {
             println!("if {} {{", #con);

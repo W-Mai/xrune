@@ -37,6 +37,4 @@ fn app(parent: i32) {
 fn main() {
     let screen = 10;
     app(screen);
-
-    return;
 }

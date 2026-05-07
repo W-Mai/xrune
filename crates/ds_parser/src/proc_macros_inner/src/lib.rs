@@ -23,7 +23,7 @@ pub fn ds_ref_derive_macro(input: TokenStream) -> TokenStream {
         pub struct #ref_name {
             inner: std::rc::Rc<core::cell::RefCell<#name>>,
         }
-        
+
         impl Clone for #ref_name {
             fn clone(&self) -> Self {
                 #ref_name {
@@ -31,15 +31,15 @@ pub fn ds_ref_derive_macro(input: TokenStream) -> TokenStream {
                 }
             }
         }
-        
+
         impl core::ops::Deref for #ref_name {
             type Target = std::rc::Rc<std::cell::RefCell<#name>>;
-        
+
             fn deref(&self) -> &Self::Target {
                 &self.inner
             }
         }
-        
+
         impl core::ops::DerefMut for #ref_name {
             fn deref_mut(&mut self) -> &mut Self::Target {
                 &mut self.inner

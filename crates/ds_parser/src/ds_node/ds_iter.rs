@@ -1,8 +1,8 @@
-use std::fmt::Debug;
-use quote::ToTokens;
-use syn::parse::{Parse, ParseStream};
-use crate::ds_node::ds_custom_token;
 use super::ds_traits::DsNodeIsMe;
+use crate::ds_node::ds_custom_token;
+use quote::ToTokens;
+use std::fmt::Debug;
+use syn::parse::{Parse, ParseStream};
 
 pub struct DsIter {
     iterable: syn::Expr,
@@ -21,9 +21,12 @@ impl DsIter {
 
 impl Debug for DsIter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{{iterable: {:?}, variable: {:?}}}",
-               self.iterable.to_token_stream().to_string(),
-               self.variable)
+        write!(
+            f,
+            "{{iterable: {:?}, variable: {:?}}}",
+            self.iterable.to_token_stream().to_string(),
+            self.variable
+        )
     }
 }
 
