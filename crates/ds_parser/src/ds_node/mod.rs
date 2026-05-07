@@ -12,9 +12,7 @@ use std::fmt::{Debug, Formatter};
 use syn::parse::{Parse, ParseStream};
 
 pub use ds_root::DsRoot;
-use ds_context::{DsContext, DsContextRef};
 use ds_node::DsNode;
-use ds_traits::DsTreeToTokens;
 use proc_macros_inner::DsRef;
 
 #[derive(DsRef)]
@@ -76,18 +74,5 @@ impl Parse for DsTree {
             node,
             children,
         })
-    }
-}
-
-impl DsTreeToTokens for DsTree {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream, ctx: DsContextRef) {
-        let DsTree { parent, node, children: _children } = self;
-
-        let ctx = DsContext {
-            parent: parent.clone(),
-            tree: ctx.borrow().tree.clone(),
-        }.into_ref();
-
-        node.to_tokens(tokens, ctx);
     }
 }

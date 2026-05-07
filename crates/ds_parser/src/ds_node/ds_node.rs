@@ -1,10 +1,9 @@
 use std::fmt::Debug;
 use quote::ToTokens;
 use syn::parse::{Parse, ParseStream};
-use super::ds_context::DsContextRef;
 use super::ds_if::DsIf;
 use super::ds_iter::DsIter;
-use super::ds_traits::{DsNodeIsMe, DsTreeToTokens};
+use super::ds_traits::DsNodeIsMe;
 use super::ds_widget::DsWidget;
 
 #[derive(Debug)]
@@ -58,16 +57,5 @@ impl Parse for DsNode {
         };
 
         Ok(node)
-    }
-}
-
-impl DsTreeToTokens for DsNode {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream, ctx: DsContextRef) {
-        match self {
-            DsNode::Widget(widget) => widget.to_tokens(tokens, ctx),
-            DsNode::If(if_node) => if_node.to_tokens(tokens, ctx),
-            DsNode::Iter(iter) => iter.to_tokens(tokens, ctx),
-            _ => {}
-        }
     }
 }
