@@ -1,24 +1,32 @@
 use std::fmt::Debug;
 use std::ops::Deref;
 use syn::parse::{Parse, ParseStream};
-use syn::spanned::Spanned;
 
 use crate::ds_node::ds_attr::DsAttr;
 use crate::ds_node::node_enum::DsNode;
 use crate::ds_node::{DsTree, DsTreeRef};
 
 pub struct DsRoot {
-    parent: syn::Expr,
+    context_attrs: Vec<DsAttr>,
     content: DsTreeRef,
 }
 
 impl DsRoot {
     pub fn get_parent(&self) -> syn::Expr {
-        self.parent.clone()
+        // Legacy: find "parent" attr, or return unit expr
+        self.context_attrs
+            .iter()
+            .find(|a| a.name == "parent")
+            .map(|a| a.value.clone())
+            .unwrap_or_else(|| syn::parse_quote!(()))
     }
 
     pub fn get_content(&self) -> DsTreeRef {
         self.content.clone()
+    }
+
+    pub fn get_context_attrs(&self) -> &[DsAttr] {
+        &self.context_attrs
     }
 }
 
@@ -33,7 +41,7 @@ impl Deref for DsRoot {
 impl Debug for DsRoot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DsRoot")
-            .field("parent", &self.parent.span().unwrap())
+            .field("context_attrs", &self.context_attrs.len())
             .field("content", &self.content)
             .finish()
     }
@@ -58,17 +66,21 @@ impl Parse for DsRoot {
 
             let parent_attr = attrs.iter().find(|attr| attr.name == "parent").ok_or(err)?;
             let parent = parent_attr.value.clone();
+
             let content = DsTree::parse(input)?.into_ref();
             content.borrow_mut().set_parent(
                 DsTree {
                     parent: None,
-                    node: DsNode::Root(parent.clone()),
+                    node: DsNode::Root(parent),
                     children: vec![],
                 }
                 .into_ref(),
             );
 
-            Ok(DsRoot { parent, content })
+            Ok(DsRoot {
+                context_attrs: attrs,
+                content,
+            })
         } else {
             Err(err)
         }
