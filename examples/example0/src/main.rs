@@ -1,6 +1,4 @@
-extern crate xwrapup_rs_macro;
-
-use xwrapup_rs_macro::ui;
+use xwrapup::ui;
 
 static A: i32 = 20;
 

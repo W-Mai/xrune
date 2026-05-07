@@ -76,12 +76,36 @@ fn cmd_bump(level: &str) -> Result {
 }
 
 fn cmd_publish(dry_run: bool) -> Result {
-    let mut args = vec!["publish", "--no-verify"];
-    if dry_run {
-        args.push("--dry-run");
+    let crates = [
+        "xwrapup-derive",
+        "xwrapup-parser",
+        "xwrapup-macros",
+        "xwrapup",
+    ];
+    let verb = if dry_run { "Packaging" } else { "Publishing" };
+    println!("  → {verb} {} crates", crates.len());
+
+    for (i, name) in crates.iter().enumerate() {
+        println!("\n  [{}/{}] {verb} {name}", i + 1, crates.len());
+        let mut args = vec!["publish", "-p", name, "--no-verify"];
+        if dry_run {
+            args.push("--dry-run");
+        }
+        cargo(&args)?;
+        if !dry_run && i + 1 < crates.len() {
+            println!("  → waiting 30s for crates.io index...");
+            std::thread::sleep(std::time::Duration::from_secs(30));
+        }
     }
-    cargo(&args)?;
-    println!("  ✅ {}", if dry_run { "dry-run" } else { "published" });
+
+    println!(
+        "\n  ✅ {}",
+        if dry_run {
+            "dry-run complete"
+        } else {
+            "all crates published"
+        }
+    );
     Ok(())
 }
 

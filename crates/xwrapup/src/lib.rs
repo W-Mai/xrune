@@ -2,4 +2,4 @@
 
 pub mod xwrapup_rune;
 
-pub use proc_macros::ui;
+pub use xwrapup_macros::ui;

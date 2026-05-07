@@ -4,4 +4,4 @@ pub mod ds_rune;
 #[cfg(test)]
 mod tests;
 
-pub use proc_macros_inner::DsRef;
+pub use xwrapup_derive::DsRef;

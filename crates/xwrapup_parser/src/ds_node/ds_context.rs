@@ -1,5 +1,5 @@
 use super::DsTreeRef;
-use proc_macros_inner::DsRef;
+use xwrapup_derive::DsRef;
 
 #[derive(Debug, DsRef)]
 pub struct DsContext {

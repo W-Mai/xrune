@@ -1,10 +1,10 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use ds_parser::ds_node::ds_attr::DsAttr;
-use ds_parser::ds_node::DsTreeRef;
-use ds_parser::ds_rune::decipher::decipher;
-use ds_parser::ds_rune::DsRune;
+use xwrapup_parser::ds_node::ds_attr::DsAttr;
+use xwrapup_parser::ds_node::DsTreeRef;
+use xwrapup_parser::ds_rune::decipher::decipher;
+use xwrapup_parser::ds_rune::DsRune;
 
 /// XwrapupRune — generates println-based debug output (original xwrapup behavior).
 pub struct XwrapupRune {

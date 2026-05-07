@@ -1,5 +1,5 @@
 [package]
-name = "xwrapup_rs_macro"
+name = "xwrapup"
 version = "1.0.0"
 authors = ["W-Mai <1341398182@qq.com>"]
 description = "xWrapup Rust Macro"
@@ -11,5 +11,5 @@ quote = "1.0.29"
 proc-macro2 = "1.0.64"
 syn = { version = "2.0.25" }
 
-ds_parser = { path = "../ds_parser" }
-proc_macros = { path = "../proc_macros" }
+xwrapup-parser = { path = "../xwrapup_parser", version = "1.0.0" }
+xwrapup-macros = { path = "../xwrapup_macros", version = "1.0.0" }

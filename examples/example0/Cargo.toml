@@ -5,4 +5,4 @@ edition = "2021"
 authors = ["Bengin X"]
 
 [dependencies]
-xwrapup_rs_macro = { path = "../../crates/xwrapup_rs_macro" }
+xwrapup = { path = "../../crates/xwrapup" }

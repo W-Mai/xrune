@@ -3,9 +3,9 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use syn::parse_macro_input;
 
-use ds_parser::ds_node::DsRoot;
-use ds_parser::ds_rune::decipher::decipher;
-use ds_parser::ds_rune::DsRune;
+use xwrapup_parser::ds_node::DsRoot;
+use xwrapup_parser::ds_rune::decipher::decipher;
+use xwrapup_parser::ds_rune::DsRune;
 
 /// Default rune: generates println debug output (xwrapup style).
 struct DefaultRune {
@@ -34,8 +34,8 @@ impl DsRune for DefaultRune {
     fn inscribe_widget(
         &mut self,
         name: &syn::Ident,
-        attrs: &[ds_parser::ds_node::ds_attr::DsAttr],
-        children: &[ds_parser::ds_node::DsTreeRef],
+        attrs: &[xwrapup_parser::ds_node::ds_attr::DsAttr],
+        children: &[xwrapup_parser::ds_node::DsTreeRef],
     ) {
         use quote::quote;
         let name_string = name.to_string();
@@ -61,7 +61,11 @@ impl DsRune for DefaultRune {
         self.parent_name = prev_parent;
     }
 
-    fn inscribe_if(&mut self, condition: &syn::Expr, children: &[ds_parser::ds_node::DsTreeRef]) {
+    fn inscribe_if(
+        &mut self,
+        condition: &syn::Expr,
+        children: &[xwrapup_parser::ds_node::DsTreeRef],
+    ) {
         use quote::quote;
         let con = quote!(#condition).to_string();
         self.tokens.extend(quote! {
@@ -79,7 +83,7 @@ impl DsRune for DefaultRune {
         &mut self,
         iterable: &syn::Expr,
         variable: &syn::Ident,
-        children: &[ds_parser::ds_node::DsTreeRef],
+        children: &[xwrapup_parser::ds_node::DsTreeRef],
     ) {
         use quote::quote;
         let iterable_str = quote!(#iterable).to_string();
