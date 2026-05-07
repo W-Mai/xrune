@@ -1,6 +1,6 @@
 [package]
 name = "xrune-sigil"
-version = "1.1.1"
+version = "1.1.2"
 authors = ["Benign X <1341398182@qq.com>"]
 description = "Derive macro for reference-counted AST nodes — part of the xrune DSL framework"
 license = "MIT"

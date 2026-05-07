@@ -1,6 +1,6 @@
 [package]
 name = "xrune-incant"
-version = "1.1.1"
+version = "1.1.2"
 authors = ["Benign X <1341398182@qq.com>"]
 description = "Proc macro entry point for the xrune declarative DSL framework"
 license = "MIT"
@@ -19,4 +19,4 @@ quote = "1.0.29"
 proc-macro2 = "1.0.64"
 syn = { version = "2.0.25" }
 
-xrune-nexus = { path = "../xrune_nexus", version = "1.1.1" }
+xrune-nexus = { path = "../xrune_nexus", version = "1.1.2" }
