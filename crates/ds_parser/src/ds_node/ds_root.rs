@@ -21,6 +21,10 @@ impl DsRoot {
     pub fn get_parent(&self) -> syn::Expr {
         self.parent.clone()
     }
+
+    pub fn get_content(&self) -> DsTreeRef {
+        self.content.clone()
+    }
 }
 
 impl Deref for DsRoot {
