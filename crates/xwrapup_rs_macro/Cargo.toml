@@ -1,6 +1,6 @@
 [package]
 name = "xwrapup_rs_macro"
-version = "0.0.1"
+version = "1.0.0"
 authors = ["W-Mai <1341398182@qq.com>"]
 description = "xWrapup Rust Macro"
 keywords = ["template", "proc_macro", "procmacro"]

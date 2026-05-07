@@ -207,12 +207,24 @@ fn run_cmd(cmd: &str, args: &[&str]) -> Result {
 
 fn read_version(root: &str) -> Result<String> {
     let content = std::fs::read_to_string(format!("{root}/Cargo.toml"))?;
-    content
+    if let Some(v) = content
         .lines()
         .find(|l| l.trim().starts_with("version =") && !l.contains("workspace"))
         .and_then(|l| l.split('"').nth(1))
-        .map(|s| s.to_string())
-        .ok_or_else(|| "could not find version".into())
+    {
+        return Ok(v.to_string());
+    }
+    for toml in find_cargo_tomls(root) {
+        if let Ok(c) = std::fs::read_to_string(&toml)
+            && let Some(v) = c
+                .lines()
+                .find(|l| l.trim().starts_with("version =") && !l.contains("workspace"))
+                .and_then(|l| l.split('"').nth(1))
+        {
+            return Ok(v.to_string());
+        }
+    }
+    Err("could not find version".into())
 }
 
 fn find_cargo_tomls(root: &str) -> Vec<String> {
