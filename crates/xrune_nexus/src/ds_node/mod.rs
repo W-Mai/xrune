@@ -13,7 +13,7 @@ use syn::parse::{Parse, ParseStream};
 
 pub use ds_root::DsRoot;
 use node_enum::DsNode;
-use xwrapup_derive::DsRef;
+use xrune_sigil::DsRef;
 
 #[derive(DsRef)]
 pub struct DsTree {

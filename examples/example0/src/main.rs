@@ -1,4 +1,4 @@
-use xwrapup::ui;
+use xrune::ui;
 
 static A: i32 = 20;
 

@@ -1,5 +1,5 @@
 use super::DsTreeRef;
-use xwrapup_derive::DsRef;
+use xrune_sigil::DsRef;
 
 #[derive(Debug, DsRef)]
 pub struct DsContext {

@@ -4,4 +4,4 @@ pub mod ds_rune;
 #[cfg(test)]
 mod tests;
 
-pub use xwrapup_derive::DsRef;
+pub use xrune_sigil::DsRef;

@@ -1,42 +1,43 @@
-use proc_macro2::TokenStream;
-use quote::quote;
+extern crate proc_macro;
 
-use xwrapup_parser::ds_node::ds_attr::DsAttr;
-use xwrapup_parser::ds_node::DsTreeRef;
-use xwrapup_parser::ds_rune::decipher::decipher;
-use xwrapup_parser::ds_rune::DsRune;
+use proc_macro::TokenStream;
+use syn::parse_macro_input;
 
-/// XwrapupRune — generates println-based debug output (original xwrapup behavior).
-pub struct XwrapupRune {
-    tokens: TokenStream,
+use xrune_nexus::ds_node::DsRoot;
+use xrune_nexus::ds_rune::decipher::decipher;
+use xrune_nexus::ds_rune::DsRune;
+
+/// Default rune: generates println debug output (xrune style).
+struct DefaultRune {
+    tokens: proc_macro2::TokenStream,
     parent_name: String,
 }
 
-impl Default for XwrapupRune {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl XwrapupRune {
-    pub fn new() -> Self {
+impl DefaultRune {
+    fn new() -> Self {
         Self {
-            tokens: TokenStream::new(),
+            tokens: proc_macro2::TokenStream::new(),
             parent_name: String::new(),
         }
     }
 }
 
-impl DsRune for XwrapupRune {
+impl DsRune for DefaultRune {
     fn inscribe_root(&mut self, parent_expr: &syn::Expr) {
-        let parent_string = "parent".to_string();
+        use quote::quote;
         self.tokens.extend(quote! {
-            println!("let {} = {:?}", #parent_string, #parent_expr);
+            println!("let parent = {:?}", #parent_expr);
         });
         self.parent_name = "parent".to_string();
     }
 
-    fn inscribe_widget(&mut self, name: &syn::Ident, attrs: &[DsAttr], children: &[DsTreeRef]) {
+    fn inscribe_widget(
+        &mut self,
+        name: &syn::Ident,
+        attrs: &[xrune_nexus::ds_node::ds_attr::DsAttr],
+        children: &[xrune_nexus::ds_node::DsTreeRef],
+    ) {
+        use quote::quote;
         let name_string = name.to_string();
         let parent_name = &self.parent_name;
 
@@ -60,16 +61,15 @@ impl DsRune for XwrapupRune {
         self.parent_name = prev_parent;
     }
 
-    fn inscribe_if(&mut self, condition: &syn::Expr, children: &[DsTreeRef]) {
+    fn inscribe_if(&mut self, condition: &syn::Expr, children: &[xrune_nexus::ds_node::DsTreeRef]) {
+        use quote::quote;
         let con = quote!(#condition).to_string();
         self.tokens.extend(quote! {
             println!("if {} {{", #con);
         });
-
         for child in children {
             decipher(child, self);
         }
-
         self.tokens.extend(quote! {
             println!("}}");
         });
@@ -79,25 +79,39 @@ impl DsRune for XwrapupRune {
         &mut self,
         iterable: &syn::Expr,
         variable: &syn::Ident,
-        children: &[DsTreeRef],
+        children: &[xrune_nexus::ds_node::DsTreeRef],
     ) {
+        use quote::quote;
         let iterable_str = quote!(#iterable).to_string();
         let variable_str = variable.to_string();
-
         self.tokens.extend(quote! {
             println!("for {} in {} {{", #variable_str, #iterable_str);
         });
-
         for child in children {
             decipher(child, self);
         }
-
         self.tokens.extend(quote! {
             println!("}}");
         });
     }
 
-    fn seal(self) -> TokenStream {
+    fn seal(self) -> proc_macro2::TokenStream {
         self.tokens
     }
+}
+
+#[proc_macro]
+pub fn ui(input: TokenStream) -> TokenStream {
+    let root = parse_macro_input!(input as DsRoot);
+
+    let mut rune = DefaultRune::new();
+
+    // Inscribe root
+    rune.inscribe_root(&root.get_parent());
+
+    // Traverse the content tree
+    let content = root.get_content();
+    decipher(&content, &mut rune);
+
+    TokenStream::from(rune.seal())
 }
