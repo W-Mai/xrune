@@ -41,20 +41,27 @@ fn app(parent: i32) {
 
 ## Architecture
 
-```
-┌─────────────────────────────────────┐
-│         proc_macros (entry)         │
-│   ui! { ... } → parse → traverse   │
-├─────────────────────────────────────┤
-│         ds_parser (parser)          │
-│   TokenStream → DsTree (pure AST)  │
-├─────────────────────────────────────┤
-│         ds_rune (codegen trait)     │
-│   DsRune trait + traverse function │
-├─────────────────────────────────────┤
-│       Backends (pluggable)          │
-│   XwrapupRune / MiruiRune / ...    │
-└─────────────────────────────────────┘
+```mermaid
+block-beta
+    columns 6
+
+    A["ui! { ... }"]:6
+    B["proc_macros"]:6
+    C["ds_rune"]:6
+    D["XwrapupRune"]:2 E["MiruiRune"]:2 F["CustomRune"]:2
+    G["ds_parser"]:6
+    H["DsRoot"]:2 I["DsWidget"]:2 J["DsIf / DsIter"]:2
+
+    style A fill:#1c3a5e,stroke:#58a6ff,color:#79c0ff
+    style B fill:#1c3a5e,stroke:#58a6ff,color:#79c0ff
+    style C fill:#1f3d2b,stroke:#3fb950,color:#3fb950
+    style D fill:#3d2b1f,stroke:#d29922,color:#e3b341
+    style E fill:#3d2b1f,stroke:#d29922,color:#e3b341
+    style F fill:#3d2b1f,stroke:#d29922,color:#e3b341
+    style G fill:#2d1f4e,stroke:#d2a8ff,color:#d2a8ff
+    style H fill:#2d1f4e,stroke:#d2a8ff,color:#d2a8ff
+    style I fill:#2d1f4e,stroke:#d2a8ff,color:#d2a8ff
+    style J fill:#2d1f4e,stroke:#d2a8ff,color:#d2a8ff
 ```
 
 ## Custom Backend
