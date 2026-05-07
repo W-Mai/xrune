@@ -3,7 +3,7 @@ use quote::quote;
 
 use ds_parser::ds_node::ds_attr::DsAttr;
 use ds_parser::ds_node::DsTreeRef;
-use ds_parser::ds_rune::traverse::traverse;
+use ds_parser::ds_rune::decipher::decipher;
 use ds_parser::ds_rune::DsRune;
 
 /// XwrapupRune — generates println-based debug output (original xwrapup behavior).
@@ -55,7 +55,7 @@ impl DsRune for XwrapupRune {
         let prev_parent = self.parent_name.clone();
         self.parent_name = name_string;
         for child in children {
-            traverse(child, self);
+            decipher(child, self);
         }
         self.parent_name = prev_parent;
     }
@@ -67,7 +67,7 @@ impl DsRune for XwrapupRune {
         });
 
         for child in children {
-            traverse(child, self);
+            decipher(child, self);
         }
 
         self.tokens.extend(quote! {
@@ -89,7 +89,7 @@ impl DsRune for XwrapupRune {
         });
 
         for child in children {
-            traverse(child, self);
+            decipher(child, self);
         }
 
         self.tokens.extend(quote! {

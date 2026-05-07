@@ -3,13 +3,13 @@ use crate::ds_node::node_enum::DsNode;
 use crate::ds_node::DsTreeRef;
 
 /// Traverse a DsTree and invoke the appropriate DsRune methods.
-pub fn traverse(tree: &DsTreeRef, rune: &mut dyn DsRune) {
+pub fn decipher(tree: &DsTreeRef, rune: &mut dyn DsRune) {
     let borrowed = tree.borrow();
     match borrowed.get_node() {
         DsNode::Root(expr) => {
             rune.inscribe_root(expr);
             for child in borrowed.get_children() {
-                traverse(child, rune);
+                decipher(child, rune);
             }
         }
         DsNode::Widget(widget) => {

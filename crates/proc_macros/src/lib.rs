@@ -4,7 +4,7 @@ use proc_macro::TokenStream;
 use syn::parse_macro_input;
 
 use ds_parser::ds_node::DsRoot;
-use ds_parser::ds_rune::traverse::traverse;
+use ds_parser::ds_rune::decipher::decipher;
 use ds_parser::ds_rune::DsRune;
 
 /// Default rune: generates println debug output (xwrapup style).
@@ -56,7 +56,7 @@ impl DsRune for DefaultRune {
         let prev_parent = self.parent_name.clone();
         self.parent_name = name_string;
         for child in children {
-            traverse(child, self);
+            decipher(child, self);
         }
         self.parent_name = prev_parent;
     }
@@ -68,7 +68,7 @@ impl DsRune for DefaultRune {
             println!("if {} {{", #con);
         });
         for child in children {
-            traverse(child, self);
+            decipher(child, self);
         }
         self.tokens.extend(quote! {
             println!("}}");
@@ -88,7 +88,7 @@ impl DsRune for DefaultRune {
             println!("for {} in {} {{", #variable_str, #iterable_str);
         });
         for child in children {
-            traverse(child, self);
+            decipher(child, self);
         }
         self.tokens.extend(quote! {
             println!("}}");
@@ -111,7 +111,7 @@ pub fn ui(input: TokenStream) -> TokenStream {
 
     // Traverse the content tree
     let content = root.get_content();
-    traverse(&content, &mut rune);
+    decipher(&content, &mut rune);
 
     TokenStream::from(rune.seal())
 }
