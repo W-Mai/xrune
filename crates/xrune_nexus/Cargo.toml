@@ -1,6 +1,6 @@
 [package]
 name = "xrune-nexus"
-version = "1.1.0"
+version = "1.1.1"
 authors = ["Benign X <1341398182@qq.com>"]
 description = "Core AST, DsRune trait, and decipher engine for the xrune DSL framework"
 license = "MIT"
@@ -17,4 +17,4 @@ proc-macro2 = "1.0.64"
 syn = { version = "2.0.25" }
 
 # self dependence
-xrune-sigil = { path = "../xrune_sigil", version = "1.1.0" }
+xrune-sigil = { path = "../xrune_sigil", version = "1.1.1" }
