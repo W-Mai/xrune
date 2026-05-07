@@ -127,4 +127,19 @@ mod tests {
         assert_eq!(attr.name.to_string(), "height");
         // Value is a complex expression - just verify it parsed
     }
+    #[test]
+    fn error_missing_parent_prefix() {
+        let tokens = quote! { div (width: 100) {} };
+        let result = syn::parse2::<crate::ds_node::DsRoot>(tokens);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("Root node must have a parent"));
+    }
+
+    #[test]
+    fn error_missing_parent_attr() {
+        let tokens = quote! { :(foo: 123:) div {} };
+        let result = syn::parse2::<crate::ds_node::DsRoot>(tokens);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("parent"));
+    }
 }
