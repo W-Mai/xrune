@@ -1,0 +1,13 @@
+[package]
+name = "xrune-fmt"
+version = "0.1.0"
+edition = "2024"
+description = "Formatter for xrune DSL ui! macros"
+license = "MIT"
+
+[[bin]]
+name = "xrune-fmt"
+path = "src/main.rs"
+
+[dependencies]
+regex = "1"
