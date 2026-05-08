@@ -16,6 +16,7 @@ pub fn decipher(tree: &DsTreeRef, rune: &mut dyn DsRune) {
             rune.inscribe_widget(
                 widget.get_name(),
                 &widget.get_attrs().attrs,
+                widget.get_enchants(),
                 borrowed.get_children(),
             );
         }

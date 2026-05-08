@@ -11,7 +11,13 @@ pub trait DsRune {
     fn inscribe_root(&mut self, parent_expr: &syn::Expr);
 
     /// Inscribe a widget node.
-    fn inscribe_widget(&mut self, name: &syn::Ident, attrs: &[DsAttr], children: &[DsTreeRef]);
+    fn inscribe_widget(
+        &mut self,
+        name: &syn::Ident,
+        attrs: &[DsAttr],
+        enchants: &[syn::Expr],
+        children: &[DsTreeRef],
+    );
 
     /// Inscribe a conditional node.
     fn inscribe_if(&mut self, condition: &syn::Expr, children: &[DsTreeRef]);

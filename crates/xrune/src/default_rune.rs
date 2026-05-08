@@ -36,7 +36,13 @@ impl DsRune for DefaultRune {
         self.parent_name = "parent".to_string();
     }
 
-    fn inscribe_widget(&mut self, name: &syn::Ident, attrs: &[DsAttr], children: &[DsTreeRef]) {
+    fn inscribe_widget(
+        &mut self,
+        name: &syn::Ident,
+        attrs: &[DsAttr],
+        _enchants: &[syn::Expr],
+        children: &[DsTreeRef],
+    ) {
         let name_string = name.to_string();
         let parent_name = &self.parent_name;
 

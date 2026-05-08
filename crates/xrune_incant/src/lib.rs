@@ -35,6 +35,7 @@ impl DsRune for DefaultRune {
         &mut self,
         name: &syn::Ident,
         attrs: &[xrune_nexus::ds_node::ds_attr::DsAttr],
+        _enchants: &[syn::Expr],
         children: &[xrune_nexus::ds_node::DsTreeRef],
     ) {
         use quote::quote;
