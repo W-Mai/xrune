@@ -26,10 +26,7 @@ pub fn format_dsl(input: &str, base_indent: &str) -> Option<String> {
 
     // Content tree
     let content = root.get_content();
-    let borrowed = content.borrow();
-    for child in borrowed.get_children() {
-        format_tree(child, &indent1, &mut out);
-    }
+    format_tree(&content, &indent1, &mut out);
 
     Some(out)
 }
