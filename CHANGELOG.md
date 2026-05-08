@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.2.0] - 2026-05-08
+
+### Added
+
+- Enchants: optional `[expr, expr, ...]` block on widget nodes
+- `DsWidget::get_enchants()` — access enchant expressions
+
+### Breaking
+
+- `DsRune::inscribe_widget` signature changed (added `enchants: &[syn::Expr]` parameter)
+
+## [1.1.3] - 2026-05-07
+
+### Added
+
+- `xrune` crate re-exports all `xrune-nexus` public API via `pub use xrune_nexus::*`
+
+## [1.1.2] - 2026-05-07
+
+### Added
+
+- `DsRoot::get_context_attrs()` — expose all context attributes to Rune implementors
+- `parent` remains required, other context attrs are optional extensions
+
+## [1.1.1] - 2026-05-07
+
+### Added
+
+- Renamed crates: xwrapup → xrune (xrune-sigil, xrune-nexus, xrune-incant, xrune)
+- GitHub repo renamed to W-Mai/xrune
+
 ## [1.1.0] - 2026-05-07
 
 ### Added
