@@ -76,7 +76,13 @@ fn cmd_bump(level: &str) -> Result {
 }
 
 fn cmd_publish(dry_run: bool) -> Result {
-    let crates = ["xrune-sigil", "xrune-nexus", "xrune-incant", "xrune"];
+    let crates = [
+        "xrune-sigil",
+        "xrune-nexus",
+        "xrune-incant",
+        "xrune",
+        "xrune-fmt",
+    ];
     let verb = if dry_run { "Packaging" } else { "Publishing" };
     println!("  → {verb} {} crates", crates.len());
 

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "Formatter for xrune DSL ui! macros"
 license = "MIT"
+repository = "https://github.com/W-Mai/xrune"
 
 [[bin]]
 name = "xrune-fmt"
@@ -15,4 +16,4 @@ syn = { version = "2", features = ["full", "parsing"] }
 quote = "1"
 proc-macro2 = "1"
 prettyplease = "0.2"
-xrune-nexus = { path = "../xrune_nexus" }
+xrune-nexus = { version = "1.2.0", path = "../xrune_nexus" }
