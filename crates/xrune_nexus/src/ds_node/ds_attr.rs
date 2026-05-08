@@ -1,4 +1,4 @@
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
 use std::fmt::Debug;
 use syn::parse::{Parse, ParseStream};
 

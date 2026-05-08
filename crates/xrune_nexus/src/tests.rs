@@ -3,10 +3,10 @@ mod tests {
     use quote::quote;
     use syn::parse2;
 
+    use crate::ds_node::DsTree;
     use crate::ds_node::ds_attr::{DsAttr, DsAttrs};
     use crate::ds_node::ds_widget::DsWidget;
     use crate::ds_node::node_enum::DsNode;
-    use crate::ds_node::DsTree;
 
     #[test]
     fn parse_single_attr() {
@@ -132,10 +132,12 @@ mod tests {
         let tokens = quote! { div (width: 100) {} };
         let result = syn::parse2::<crate::ds_node::DsRoot>(tokens);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("Root node must have a parent"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Root node must have a parent")
+        );
     }
 
     #[test]

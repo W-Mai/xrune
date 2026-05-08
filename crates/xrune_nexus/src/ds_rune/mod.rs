@@ -1,7 +1,7 @@
 pub mod decipher;
 
-use crate::ds_node::ds_attr::DsAttr;
 use crate::ds_node::DsTreeRef;
+use crate::ds_node::ds_attr::DsAttr;
 
 /// DsRune — the codegen interface.
 /// Implement this trait to generate code from the parsed DSL tree.

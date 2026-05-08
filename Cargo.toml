@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "crates/*",
-        "examples/*",
+    "examples/*",
     "xtask",
 ]
 
@@ -10,3 +10,15 @@ default-members = [
 ]
 
 resolver = "2"
+
+[workspace.package]
+version = "1.3.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/W-Mai/xrune"
+
+[workspace.dependencies]
+xrune-sigil = { path = "crates/xrune_sigil", version = "=1.3.0" }
+xrune-nexus = { path = "crates/xrune_nexus", version = "=1.3.0" }
+xrune-incant = { path = "crates/xrune_incant", version = "=1.3.0" }
+xrune = { path = "crates/xrune", version = "=1.3.0" }

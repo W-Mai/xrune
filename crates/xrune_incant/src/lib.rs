@@ -4,8 +4,8 @@ use proc_macro::TokenStream;
 use syn::parse_macro_input;
 
 use xrune_nexus::ds_node::DsRoot;
-use xrune_nexus::ds_rune::decipher::decipher;
 use xrune_nexus::ds_rune::DsRune;
+use xrune_nexus::ds_rune::decipher::decipher;
 
 /// Default rune: generates println debug output (xrune style).
 struct DefaultRune {

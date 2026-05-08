@@ -1,6 +1,6 @@
 use super::DsRune;
-use crate::ds_node::node_enum::DsNode;
 use crate::ds_node::DsTreeRef;
+use crate::ds_node::node_enum::DsNode;
 
 /// Traverse a DsTree and invoke the appropriate DsRune methods.
 pub fn decipher(tree: &DsTreeRef, rune: &mut dyn DsRune) {

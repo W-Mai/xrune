@@ -1,18 +1,17 @@
 [package]
 name = "xrune"
-version = "1.3.0"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
 authors = ["Benign X <1341398182@qq.com>"]
-license = "MIT"
 description = "Declarative UI DSL framework with pluggable codegen backends"
-repository = "https://github.com/W-Mai/xrune"
 keywords = ["dsl", "ui", "declarative", "proc-macro", "codegen"]
 categories = ["development-tools::procedural-macro-helpers"]
-edition = "2018"
 
 [dependencies]
-quote = "1.0.29"
-proc-macro2 = "1.0.64"
-syn = { version = "2.0.25" }
-
-xrune-nexus = { path = "../xrune_nexus", version = "1.1.2" }
-xrune-incant = { path = "../xrune_incant", version = "1.1.2" }
+quote = "1"
+proc-macro2 = "1"
+syn = { version = "2" }
+xrune-nexus = { workspace = true }
+xrune-incant = { workspace = true }
