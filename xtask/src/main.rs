@@ -326,17 +326,16 @@ fn replace_semver(line: &str, next: &str) -> String {
 }
 
 fn replace_version_field(line: &str, next: &str) -> String {
-    // Find `version = "..."` and replace only that quoted value
     if let Some(ver_pos) = line.find("version =") {
         let after_ver = &line[ver_pos..];
-        if let Some(q1) = after_ver.find('"') {
-            if let Some(q2) = after_ver[q1 + 1..].find('"') {
-                let abs_q1 = ver_pos + q1;
-                let abs_q2 = ver_pos + q1 + 1 + q2;
-                let before = &line[..abs_q1];
-                let after = &line[abs_q2 + 1..];
-                return format!("{before}\"{next}\"{after}");
-            }
+        if let Some(q1) = after_ver.find('"')
+            && let Some(q2) = after_ver[q1 + 1..].find('"')
+        {
+            let abs_q1 = ver_pos + q1;
+            let abs_q2 = ver_pos + q1 + 1 + q2;
+            let before = &line[..abs_q1];
+            let after = &line[abs_q2 + 1..];
+            return format!("{before}\"{next}\"{after}");
         }
     }
     line.to_string()
