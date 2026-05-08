@@ -43,11 +43,12 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
         }
         DsNode::Widget(widget) => {
             out.push_str(indent);
-            out.push_str(&widget.get_name().to_string());
+            let name_str = widget.get_name().to_string();
+            out.push_str(&name_str);
             out.push(' ');
 
             // Attributes
-            format_attrs(&widget.get_attrs().attrs, out);
+            format_attrs(&widget.get_attrs().attrs, indent, name_str.len(), out);
 
             // Enchants
             let enchants = widget.get_enchants();
@@ -102,17 +103,38 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
     }
 }
 
-fn format_attrs(attrs: &[DsAttr], out: &mut String) {
-    out.push('(');
-    for (i, attr) in attrs.iter().enumerate() {
-        if i > 0 {
-            out.push_str(", ");
+const MAX_LINE_WIDTH: usize = 100;
+
+fn format_attrs(attrs: &[DsAttr], indent: &str, name_len: usize, out: &mut String) {
+    // Build all attr strings first
+    let attr_strs: Vec<String> = attrs
+        .iter()
+        .map(|attr| format!("{}: {}", attr.name, fmt_expr(&attr.value)))
+        .collect();
+
+    // Check if single-line fits within MAX_LINE_WIDTH
+    let single_line = attr_strs.join(", ");
+    let total_len = indent.len() + name_len + 1 + single_line.len() + 1 + 3; // "name (...) {}"
+
+    if total_len <= MAX_LINE_WIDTH {
+        out.push('(');
+        out.push_str(&single_line);
+        out.push(')');
+    } else {
+        // Multi-line
+        let attr_indent = format!("{indent}    ");
+        out.push_str("(\n");
+        for (i, s) in attr_strs.iter().enumerate() {
+            out.push_str(&attr_indent);
+            out.push_str(s);
+            if i + 1 < attr_strs.len() {
+                out.push(',');
+            }
+            out.push('\n');
         }
-        out.push_str(&attr.name.to_string());
-        out.push_str(": ");
-        out.push_str(&fmt_expr(&attr.value));
+        out.push_str(indent);
+        out.push(')');
     }
-    out.push(')');
 }
 
 /// Format a syn::Expr into pretty Rust code using prettyplease
