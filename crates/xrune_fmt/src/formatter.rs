@@ -1,3 +1,4 @@
+use quote::ToTokens;
 use xrune_nexus::ds_node::ds_attr::DsAttr;
 use xrune_nexus::ds_node::node_enum::DsNode;
 use xrune_nexus::ds_node::{DsRoot, DsTreeRef};
@@ -56,7 +57,7 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
                 out.push_str(" [\n");
                 for enchant in enchants {
                     out.push_str(&child_indent);
-                    out.push_str(&fmt_expr(enchant));
+                    out.push_str(&fmt_expr_indented(enchant, &child_indent));
                     out.push_str(",\n");
                 }
                 out.push_str(indent);
@@ -106,22 +107,47 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
 const MAX_LINE_WIDTH: usize = 100;
 
 fn format_attrs(attrs: &[DsAttr], indent: &str, name_len: usize, out: &mut String) {
-    // Build all attr strings first
+    if attrs.is_empty() {
+        out.push_str("()");
+        return;
+    }
+
+    // Check if original was multiline (first attr and last attr on different lines)
+    let first_line = attrs
+        .first()
+        .map(|a| a.name.span().start().line)
+        .unwrap_or(0);
+    let last_line = attrs
+        .last()
+        .map(|a| {
+            a.value
+                .to_token_stream()
+                .into_iter()
+                .last()
+                .map(|t| t.span().end().line)
+                .unwrap_or(first_line)
+        })
+        .unwrap_or(first_line);
+    let was_multiline = last_line > first_line;
+
+    // Build all attr strings
+    let attr_indent = format!("{indent}    ");
     let attr_strs: Vec<String> = attrs
         .iter()
-        .map(|attr| format!("{}: {}", attr.name, fmt_expr(&attr.value)))
+        .map(|attr| {
+            format!(
+                "{}: {}",
+                attr.name,
+                fmt_expr_indented(&attr.value, &attr_indent)
+            )
+        })
         .collect();
 
-    // Check if single-line fits within MAX_LINE_WIDTH
     let single_line = attr_strs.join(", ");
-    let total_len = indent.len() + name_len + 1 + single_line.len() + 1 + 3; // "name (...) {}"
+    let total_len = indent.len() + name_len + 1 + single_line.len() + 1 + 3;
 
-    if total_len <= MAX_LINE_WIDTH {
-        out.push('(');
-        out.push_str(&single_line);
-        out.push(')');
-    } else {
-        // Multi-line
+    // Use multiline if: original was multiline OR exceeds max width
+    if was_multiline || total_len > MAX_LINE_WIDTH {
         let attr_indent = format!("{indent}    ");
         out.push_str("(\n");
         for (i, s) in attr_strs.iter().enumerate() {
@@ -134,18 +160,26 @@ fn format_attrs(attrs: &[DsAttr], indent: &str, name_len: usize, out: &mut Strin
         }
         out.push_str(indent);
         out.push(')');
+    } else {
+        out.push('(');
+        out.push_str(&single_line);
+        out.push(')');
     }
 }
 
 /// Format a syn::Expr into pretty Rust code using prettyplease
 fn fmt_expr(expr: &syn::Expr) -> String {
+    fmt_expr_indented(expr, "")
+}
+
+/// Format a syn::Expr with re-indentation for multi-line output
+fn fmt_expr_indented(expr: &syn::Expr, indent: &str) -> String {
     let tokens = quote::quote!(#expr);
     let code = format!("const _: () = {{ let _ = {tokens}; }};");
     let Ok(file) = syn::parse_str::<syn::File>(&code) else {
         return tokens.to_string();
     };
     let formatted = prettyplease::unparse(&file);
-    // Extract between "let _ = " and ";\n"
     let Some(start) = formatted.find("let _ = ") else {
         return tokens.to_string();
     };
@@ -153,5 +187,30 @@ fn fmt_expr(expr: &syn::Expr) -> String {
     let Some(end) = formatted[start..].find(";\n") else {
         return tokens.to_string();
     };
-    formatted[start..start + end].trim().to_string()
+    let result = formatted[start..start + end].trim().to_string();
+
+    // Re-indent multi-line results
+    if result.contains('\n') && !indent.is_empty() {
+        let inner_indent = format!("{indent}    ");
+        result
+            .lines()
+            .enumerate()
+            .map(|(i, line)| {
+                if i == 0 {
+                    line.to_string()
+                } else {
+                    let trimmed = line.trim_start();
+                    if trimmed == "}" || trimmed == "}," || trimmed == ")" || trimmed == ")," {
+                        // Closing brace aligns with opening
+                        format!("{indent}{trimmed}")
+                    } else {
+                        format!("{inner_indent}{trimmed}")
+                    }
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    } else {
+        result
+    }
 }
