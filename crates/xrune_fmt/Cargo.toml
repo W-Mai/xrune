@@ -1,6 +1,6 @@
 [package]
 name = "xrune-fmt"
-version = "0.1.0"
+version = "1.3.0"
 edition = "2024"
 description = "Formatter for xrune DSL ui! macros"
 license = "MIT"
