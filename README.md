@@ -11,6 +11,8 @@ A declarative UI DSL proc macro framework with pluggable code generation backend
 
 - Declarative widget tree syntax with nested children
 - Attribute expressions (any valid Rust expression as value)
+- Enchants — attach arbitrary data to nodes via `[expr, ...]` syntax
+- Context area with arbitrary key-value pairs
 - Conditional rendering (`if`)
 - Iteration (`walk ... with ...`)
 - Pluggable codegen via `DsRune` trait — bring your own backend
@@ -22,8 +24,10 @@ use xrune::ui;
 
 fn app(parent: i32) {
     ui! {
-        :(parent: parent:)
+        // Context area: arbitrary key-value pairs
+        :(parent: parent  world: &mut world:)
 
+        // Widget with attributes
         container (width: 480, height: 320, color: "dark") {
             header (height: 40, text: "Hello") {}
 
@@ -32,10 +36,18 @@ fn app(parent: i32) {
                 button (text: "Cancel", grow: 1.0) {}
             }
 
-            walk items with item {
+            // Enchants: attach data to a node
+            physics_obj (x: 100, y: 200) [
+                Velocity { vx: 1, vy: 0 },
+                Collider::circle(10),
+            ] {}
+
+            // Iteration
+            walk items.iter() with item {
                 label (text: item.name) {}
             }
 
+            // Conditional
             if show_footer {
                 footer (height: 20) {}
             }
@@ -83,16 +95,48 @@ block-beta
 Implement `DsRune` to generate your own code:
 
 ```rust
-use xrune::DsRune;
+use xrune::ds_rune::DsRune;
+use xrune::ds_node::ds_attr::DsAttr;
+use xrune::ds_node::DsTreeRef;
 
 struct MyRune { /* ... */ }
 
 impl DsRune for MyRune {
     fn inscribe_root(&mut self, parent_expr: &syn::Expr) { /* ... */ }
-    fn inscribe_widget(&mut self, name: &syn::Ident, attrs: &[DsAttr], children: &[DsTreeRef]) { /* ... */ }
+
+    fn inscribe_widget(
+        &mut self,
+        name: &syn::Ident,
+        attrs: &[DsAttr],
+        enchants: &[syn::Expr],  // attached data
+        children: &[DsTreeRef],
+    ) { /* ... */ }
+
     fn inscribe_if(&mut self, condition: &syn::Expr, children: &[DsTreeRef]) { /* ... */ }
-    fn inscribe_iter(&mut self, iterable: &syn::Expr, variable: &syn::Ident, children: &[DsTreeRef]) { /* ... */ }
+
+    fn inscribe_iter(
+        &mut self,
+        iterable: &syn::Expr,
+        variable: &syn::Ident,
+        children: &[DsTreeRef],
+    ) { /* ... */ }
+
     fn seal(self) -> TokenStream { /* ... */ }
+}
+```
+
+## Context Area
+
+The `:(key: value  key: value:)` block passes arbitrary context to the Rune implementation. The `parent` key is required; all others are optional and Rune-specific.
+
+```rust
+ui! {
+    :(
+        parent: root_entity
+        world: &mut app.world
+        theme: Theme::Dark
+    :)
+    // ...
 }
 ```
 
