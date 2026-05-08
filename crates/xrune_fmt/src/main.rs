@@ -28,41 +28,39 @@ fn main() {
 }
 
 fn format_ui_macros(source: &str) -> String {
-    // Find ui! { ... } blocks (handling nested braces)
     let re = Regex::new(r"ui!\s*\{").unwrap();
     let mut result = String::new();
     let mut last_end = 0;
 
     for m in re.find_iter(source) {
         let start = m.start();
-        let brace_start = m.end() - 1; // position of '{'
+        let brace_start = m.end() - 1;
 
-        // Find matching closing brace
         let Some(brace_end) = find_matching_brace(source, brace_start) else {
             continue;
         };
 
-        // Copy everything before this macro
         result.push_str(&source[last_end..start]);
 
-        // Extract inner content (between { and })
         let inner = &source[brace_start + 1..brace_end];
 
-        // Detect indentation of the ui! line
+        // Detect base indentation
         let line_start = source[..start].rfind('\n').map(|p| p + 1).unwrap_or(0);
-        let indent = &source[line_start..start]
+        let indent: String = source[line_start..start]
             .chars()
             .take_while(|c| c.is_whitespace())
-            .collect::<String>();
+            .collect();
 
-        // Format the inner content
-        let formatted_inner = formatter::format_dsl(inner, indent);
-
-        // Write formatted macro
-        result.push_str("ui! {\n");
-        result.push_str(&formatted_inner);
-        result.push_str(indent);
-        result.push('}');
+        // Try to format with parser
+        if let Some(formatted_inner) = formatter::format_dsl(inner, &indent) {
+            result.push_str("ui! {\n");
+            result.push_str(&formatted_inner);
+            result.push_str(&indent);
+            result.push('}');
+        } else {
+            // Parser failed — keep original
+            result.push_str(&source[start..=brace_end]);
+        }
 
         last_end = brace_end + 1;
     }

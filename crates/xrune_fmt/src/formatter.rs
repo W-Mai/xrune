@@ -1,160 +1,138 @@
-/// Format xrune DSL content (inside ui! { ... })
-pub fn format_dsl(input: &str, base_indent: &str) -> String {
-    let tokens = tokenize(input);
+use xrune_nexus::ds_node::ds_attr::DsAttr;
+use xrune_nexus::ds_node::node_enum::DsNode;
+use xrune_nexus::ds_node::{DsRoot, DsTreeRef};
+
+/// Format xrune DSL content (inside ui! { ... }) using the real parser
+pub fn format_dsl(input: &str, base_indent: &str) -> Option<String> {
+    let tokens: proc_macro2::TokenStream = input.parse().ok()?;
+    let root: DsRoot = syn::parse2(tokens).ok()?;
+
     let mut out = String::new();
-    let mut indent_level: usize = 1; // start at 1 (inside ui! {})
-    let mut i = 0;
+    let indent1 = format!("{base_indent}    ");
 
-    while i < tokens.len() {
-        let tok = &tokens[i];
-        match tok.as_str() {
-            ":(" => {
-                // Context area start — put on its own line
-                out.push_str(&make_indent(base_indent, indent_level));
-                out.push_str(":(\n");
-                indent_level += 1;
-                i += 1;
-                // Collect key: value pairs until :)
-                while i < tokens.len() && tokens[i] != ":)" {
-                    // Each key: value on its own line
-                    let mut line = String::new();
-                    while i < tokens.len() && tokens[i] != ":)" {
-                        if tokens[i] == ":" && !line.is_empty() && i + 1 < tokens.len() && tokens[i + 1] != "(" && tokens[i + 1] != ")" {
-                            // key: value separator — collect value until next key or :)
-                            line.push_str(": ");
-                            i += 1;
-                            // Collect value tokens until next bare ident followed by : or :)
-                            while i < tokens.len() && tokens[i] != ":)" {
-                                if is_ident(&tokens[i]) && i + 1 < tokens.len() && tokens[i + 1] == ":" {
-                                    break;
-                                }
-                                line.push_str(&tokens[i]);
-                                if !tokens[i].ends_with(' ') {
-                                    line.push(' ');
-                                }
-                                i += 1;
-                            }
-                            break;
-                        }
-                        line.push_str(&tokens[i]);
-                        i += 1;
-                    }
-                    let line = line.trim().to_string();
-                    if !line.is_empty() {
-                        out.push_str(&make_indent(base_indent, indent_level));
-                        out.push_str(&line);
-                        out.push('\n');
-                    }
-                }
-                indent_level -= 1;
-                out.push_str(&make_indent(base_indent, indent_level));
-                out.push_str(":)\n\n");
-                if i < tokens.len() && tokens[i] == ":)" {
-                    i += 1;
-                }
+    // Context area
+    out.push_str(&indent1);
+    out.push_str(":(\n");
+    let indent2 = format!("{indent1}    ");
+    for attr in root.get_context_attrs() {
+        out.push_str(&indent2);
+        out.push_str(&attr.name.to_string());
+        out.push_str(": ");
+        out.push_str(&fmt_expr(&attr.value));
+        out.push('\n');
+    }
+    out.push_str(&indent1);
+    out.push_str(":)\n\n");
+
+    // Content tree
+    let content = root.get_content();
+    let borrowed = content.borrow();
+    for child in borrowed.get_children() {
+        format_tree(child, &indent1, &mut out);
+    }
+
+    Some(out)
+}
+
+fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
+    let borrowed = tree.borrow();
+    let child_indent = format!("{indent}    ");
+
+    match borrowed.get_node() {
+        DsNode::Root(_) => {
+            for child in borrowed.get_children() {
+                format_tree(child, indent, out);
             }
-            "{" => {
-                out.push_str("{\n");
-                indent_level += 1;
-                i += 1;
+        }
+        DsNode::Widget(widget) => {
+            out.push_str(indent);
+            out.push_str(&widget.get_name().to_string());
+            out.push(' ');
+
+            // Attributes
+            format_attrs(&widget.get_attrs().attrs, out);
+
+            // Enchants
+            let enchants = widget.get_enchants();
+            if !enchants.is_empty() {
+                out.push_str(" [\n");
+                for enchant in enchants {
+                    out.push_str(&child_indent);
+                    out.push_str(&fmt_expr(enchant));
+                    out.push_str(",\n");
+                }
+                out.push_str(indent);
+                out.push(']');
             }
-            "}" => {
-                indent_level -= 1;
-                out.push_str(&make_indent(base_indent, indent_level));
+
+            // Children
+            let children = borrowed.get_children();
+            if children.is_empty() {
+                out.push_str(" {}\n");
+            } else {
+                out.push_str(" {\n");
+                for child in children {
+                    format_tree(child, &child_indent, out);
+                }
+                out.push_str(indent);
                 out.push_str("}\n");
-                i += 1;
-            }
-            _ => {
-                // Regular token — widget name, attrs, etc.
-                // Detect widget: ident followed by (
-                if is_ident(tok) && i + 1 < tokens.len() && tokens[i + 1] == "(" {
-                    // Widget declaration
-                    out.push_str(&make_indent(base_indent, indent_level));
-                    out.push_str(tok);
-                    out.push(' ');
-                    i += 1;
-                    // Collect everything until matching ) then optional [] then {}
-                    // Just pass through for now
-                } else {
-                    out.push_str(tok);
-                    if !tok.ends_with('\n') {
-                        out.push(' ');
-                    }
-                    i += 1;
-                }
             }
         }
-    }
-
-    out
-}
-
-fn make_indent(base: &str, level: usize) -> String {
-    let mut s = base.to_string();
-    for _ in 0..level {
-        s.push_str("    ");
-    }
-    s
-}
-
-fn is_ident(s: &str) -> bool {
-    !s.is_empty() && s.chars().next().unwrap().is_alphabetic()
-        && s.chars().all(|c| c.is_alphanumeric() || c == '_')
-}
-
-/// Simple tokenizer — splits on whitespace but keeps delimiters as tokens
-fn tokenize(input: &str) -> Vec<String> {
-    let mut tokens = Vec::new();
-    let mut chars = input.chars().peekable();
-
-    while let Some(&c) = chars.peek() {
-        match c {
-            ' ' | '\t' | '\n' | '\r' => {
-                chars.next();
+        DsNode::If(if_node) => {
+            out.push_str(indent);
+            out.push_str("if ");
+            out.push_str(&fmt_expr(if_node.get_condition()));
+            out.push_str(" {\n");
+            for child in borrowed.get_children() {
+                format_tree(child, &child_indent, out);
             }
-            '{' | '}' | '(' | ')' | '[' | ']' | ',' | ';' => {
-                tokens.push(c.to_string());
-                chars.next();
+            out.push_str(indent);
+            out.push_str("}\n");
+        }
+        DsNode::Iter(iter_node) => {
+            out.push_str(indent);
+            out.push_str("walk ");
+            out.push_str(&fmt_expr(iter_node.get_iterable()));
+            out.push_str(" with ");
+            out.push_str(&iter_node.get_variable().to_string());
+            out.push_str(" {\n");
+            for child in borrowed.get_children() {
+                format_tree(child, &child_indent, out);
             }
-            ':' => {
-                chars.next();
-                if chars.peek() == Some(&'(') {
-                    chars.next();
-                    tokens.push(":(".to_string());
-                } else if chars.peek() == Some(&')') {
-                    chars.next();
-                    tokens.push(":)".to_string());
-                } else {
-                    tokens.push(":".to_string());
-                }
-            }
-            '"' => {
-                // String literal
-                let mut s = String::new();
-                s.push(chars.next().unwrap());
-                while let Some(&ch) = chars.peek() {
-                    s.push(chars.next().unwrap());
-                    if ch == '"' && !s.ends_with("\\\"") {
-                        break;
-                    }
-                }
-                tokens.push(s);
-            }
-            _ => {
-                // Word/expression token — collect until delimiter
-                let mut word = String::new();
-                while let Some(&ch) = chars.peek() {
-                    if ch.is_whitespace() || "{}()[],:;".contains(ch) {
-                        break;
-                    }
-                    word.push(chars.next().unwrap());
-                }
-                if !word.is_empty() {
-                    tokens.push(word);
-                }
-            }
+            out.push_str(indent);
+            out.push_str("}\n");
         }
     }
+}
 
-    tokens
+fn format_attrs(attrs: &[DsAttr], out: &mut String) {
+    out.push('(');
+    for (i, attr) in attrs.iter().enumerate() {
+        if i > 0 {
+            out.push_str(", ");
+        }
+        out.push_str(&attr.name.to_string());
+        out.push_str(": ");
+        out.push_str(&fmt_expr(&attr.value));
+    }
+    out.push(')');
+}
+
+/// Format a syn::Expr into pretty Rust code using prettyplease
+fn fmt_expr(expr: &syn::Expr) -> String {
+    let tokens = quote::quote!(#expr);
+    let code = format!("const _: () = {{ let _ = {tokens}; }};");
+    let Ok(file) = syn::parse_str::<syn::File>(&code) else {
+        return tokens.to_string();
+    };
+    let formatted = prettyplease::unparse(&file);
+    // Extract between "let _ = " and ";\n"
+    let Some(start) = formatted.find("let _ = ") else {
+        return tokens.to_string();
+    };
+    let start = start + 8;
+    let Some(end) = formatted[start..].find(";\n") else {
+        return tokens.to_string();
+    };
+    formatted[start..start + end].trim().to_string()
 }
