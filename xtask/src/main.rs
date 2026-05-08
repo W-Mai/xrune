@@ -299,7 +299,7 @@ fn rewrite_version(path: &str, next: &str) -> Result<bool> {
             if in_package && trimmed.starts_with("version =") && !trimmed.contains("workspace") {
                 replace_semver(line, next)
             } else if in_workspace_deps && trimmed.contains("version =") {
-                replace_semver(line, &format!("={next}"))
+                replace_version_field(line, &format!("={next}"))
             } else {
                 line.to_string()
             }
@@ -325,6 +325,22 @@ fn replace_semver(line: &str, next: &str) -> String {
     line.to_string()
 }
 
+fn replace_version_field(line: &str, next: &str) -> String {
+    // Find `version = "..."` and replace only that quoted value
+    if let Some(ver_pos) = line.find("version =") {
+        let after_ver = &line[ver_pos..];
+        if let Some(q1) = after_ver.find('"') {
+            if let Some(q2) = after_ver[q1 + 1..].find('"') {
+                let abs_q1 = ver_pos + q1;
+                let abs_q2 = ver_pos + q1 + 1 + q2;
+                let before = &line[..abs_q1];
+                let after = &line[abs_q2 + 1..];
+                return format!("{before}\"{next}\"{after}");
+            }
+        }
+    }
+    line.to_string()
+}
 fn bump_version(version: &str, level: &str) -> Result<String> {
     let parts: Vec<u64> = version
         .split('.')
