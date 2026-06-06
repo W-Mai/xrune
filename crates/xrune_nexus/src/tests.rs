@@ -147,4 +147,43 @@ mod tests {
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("parent"));
     }
+
+    #[test]
+    fn parse_widget_no_braces() {
+        let tokens = quote! { Image (path: "x.png") };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Widget(w) => {
+                assert_eq!(w.get_name().to_string(), "Image");
+                assert_eq!(w.get_attrs().attrs.len(), 1);
+            }
+            _ => panic!("Expected Widget"),
+        }
+        assert_eq!(tree.get_children().len(), 0);
+    }
+
+    #[test]
+    fn parse_widget_empty_braces_still_works() {
+        let tokens = quote! { Image (path: "x.png") {} };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Widget(_) => {}
+            _ => panic!("Expected Widget"),
+        }
+        assert_eq!(tree.get_children().len(), 0);
+    }
+
+    #[test]
+    fn error_if_without_body() {
+        let tokens = quote! { if show_footer };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn error_walk_without_body() {
+        let tokens = quote! { walk items with x };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(result.is_err());
+    }
 }

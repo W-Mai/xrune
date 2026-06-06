@@ -60,15 +60,22 @@ impl Parse for DsTree {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let node = DsNode::parse(input)?;
 
-        let content;
-        syn::braced!(content in input);
+        let needs_body = !matches!(node, DsNode::Widget(_));
+        let has_braces = input.peek(syn::token::Brace);
 
-        let mut children = Vec::new();
-        while !content.is_empty() {
-            let child = DsTree::parse(&content)?.into_ref();
-            child.borrow_mut().set_parent(child.clone());
-            children.push(child);
-        }
+        let children = if needs_body || has_braces {
+            let content;
+            syn::braced!(content in input);
+            let mut children = Vec::new();
+            while !content.is_empty() {
+                let child = DsTree::parse(&content)?.into_ref();
+                child.borrow_mut().set_parent(child.clone());
+                children.push(child);
+            }
+            children
+        } else {
+            Vec::new()
+        };
 
         Ok(DsTree {
             parent: None,
