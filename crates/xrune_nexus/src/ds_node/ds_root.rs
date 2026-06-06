@@ -61,6 +61,9 @@ impl Parse for DsRoot {
             let paren = syn::parenthesized!(params in input);
             while !params.is_empty() {
                 attrs.push(params.parse()?);
+                if params.peek(syn::Token![,]) {
+                    params.parse::<syn::Token![,]>()?;
+                }
                 if params.peek(syn::Token![:]) {
                     params.parse::<syn::Token![:]>()?;
                 }

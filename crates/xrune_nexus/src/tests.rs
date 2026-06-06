@@ -263,4 +263,30 @@ mod tests {
         let result = syn::parse2::<DsTree>(tokens);
         assert!(result.is_err());
     }
+
+    #[test]
+    fn root_header_accepts_commas() {
+        let tokens = quote! {
+            :(
+                parent: root,
+                world: w,
+            :)
+            Foo {}
+        };
+        let result = syn::parse2::<crate::ds_node::DsRoot>(tokens);
+        assert!(result.is_ok(), "trailing-comma form must parse");
+    }
+
+    #[test]
+    fn root_header_accepts_no_commas() {
+        let tokens = quote! {
+            :(
+                parent: root
+                world: w
+            :)
+            Foo {}
+        };
+        let result = syn::parse2::<crate::ds_node::DsRoot>(tokens);
+        assert!(result.is_ok(), "no-comma form must still parse");
+    }
 }
