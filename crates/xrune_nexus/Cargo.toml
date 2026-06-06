@@ -12,5 +12,5 @@ categories = ["development-tools::procedural-macro-helpers"]
 [dependencies]
 quote = "1"
 proc-macro2 = "1"
-syn = { version = "2" }
+syn = { version = "2", features = ["full"] }
 xrune-sigil = { workspace = true }

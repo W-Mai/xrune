@@ -219,4 +219,48 @@ mod tests {
         let result = syn::parse2::<DsTree>(tokens);
         assert!(result.is_err());
     }
+
+    #[test]
+    fn parse_match_node() {
+        let tokens = quote! {
+            match state {
+                State::Loading => { Spinner () }
+                State::Ready => { Content (text: "ok") }
+            }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Match(m) => {
+                assert_eq!(m.get_arms().len(), 2);
+            }
+            _ => panic!("Expected Match node"),
+        }
+    }
+
+    #[test]
+    fn parse_match_with_binding() {
+        let tokens = quote! {
+            match state {
+                State::Ready(d) => { Content (text: "x") }
+                _ => { Empty () }
+            }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Match(m) => {
+                assert_eq!(m.get_arms().len(), 2);
+                let arms = m.get_arms();
+                assert_eq!(arms[0].get_children().len(), 1);
+                assert_eq!(arms[1].get_children().len(), 1);
+            }
+            _ => panic!("Expected Match"),
+        }
+    }
+
+    #[test]
+    fn error_match_without_body() {
+        let tokens = quote! { match x };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(result.is_err());
+    }
 }

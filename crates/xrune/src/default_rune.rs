@@ -116,6 +116,33 @@ impl DsRune for DefaultRune {
         });
     }
 
+    fn inscribe_match(
+        &mut self,
+        scrutinee: &syn::Expr,
+        arms: &[xrune_nexus::ds_node::ds_match::DsMatchArm],
+    ) {
+        let scrutinee_str = quote!(#scrutinee).to_string();
+        self.tokens.extend(quote! {
+            println!("match {} {{", #scrutinee_str);
+        });
+        for arm in arms {
+            let pat = arm.get_pat();
+            let pat_str = quote!(#pat).to_string();
+            self.tokens.extend(quote! {
+                println!("  {} => {{", #pat_str);
+            });
+            for child in arm.get_children() {
+                decipher(child, self);
+            }
+            self.tokens.extend(quote! {
+                println!("  }}");
+            });
+        }
+        self.tokens.extend(quote! {
+            println!("}}");
+        });
+    }
+
     fn seal(self) -> TokenStream {
         self.tokens
     }

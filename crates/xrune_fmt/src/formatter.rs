@@ -112,6 +112,26 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
             out.push_str(indent);
             out.push_str("}\n");
         }
+        DsNode::Match(match_node) => {
+            out.push_str(indent);
+            out.push_str("match ");
+            out.push_str(&fmt_expr(match_node.get_scrutinee()));
+            out.push_str(" {\n");
+            let arm_indent = format!("{child_indent}    ");
+            for arm in match_node.get_arms() {
+                let pat = arm.get_pat();
+                out.push_str(&child_indent);
+                out.push_str(&quote::quote!(#pat).to_string());
+                out.push_str(" => {\n");
+                for child in arm.get_children() {
+                    format_tree(child, &arm_indent, out);
+                }
+                out.push_str(&child_indent);
+                out.push_str("}\n");
+            }
+            out.push_str(indent);
+            out.push_str("}\n");
+        }
     }
 }
 

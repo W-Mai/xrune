@@ -1,5 +1,6 @@
 use super::ds_if::DsIf;
 use super::ds_iter::DsIter;
+use super::ds_match::DsMatch;
 use super::ds_niche::DsNiche;
 use super::ds_traits::DsNodeIsMe;
 use super::ds_widget::DsWidget;
@@ -13,6 +14,7 @@ pub enum DsNodeType {
     If,
     Iter,
     Niche,
+    Match,
 }
 
 pub enum DsNode {
@@ -21,6 +23,7 @@ pub enum DsNode {
     If(DsIf),
     Iter(DsIter),
     Niche(DsNiche),
+    Match(DsMatch),
 }
 
 impl Debug for DsNode {
@@ -31,6 +34,7 @@ impl Debug for DsNode {
             DsNode::If(if_node) => write!(f, "If({if_node:?})"),
             DsNode::Iter(iter) => write!(f, "Iter({iter:?})"),
             DsNode::Niche(niche) => write!(f, "Niche({niche:?})"),
+            DsNode::Match(match_node) => write!(f, "Match({match_node:?})"),
         }
     }
 }
@@ -39,6 +43,8 @@ impl DsNodeType {
     fn what_type(input: ParseStream) -> DsNodeType {
         if DsNiche::is_me(input) {
             DsNodeType::Niche
+        } else if DsMatch::is_me(input) {
+            DsNodeType::Match
         } else if DsWidget::is_me(input) {
             DsNodeType::Widget
         } else if DsIf::is_me(input) {
@@ -60,6 +66,7 @@ impl Parse for DsNode {
             DsNodeType::If => DsNode::If(input.parse()?),
             DsNodeType::Iter => DsNode::Iter(input.parse()?),
             DsNodeType::Niche => DsNode::Niche(input.parse()?),
+            DsNodeType::Match => DsNode::Match(input.parse()?),
         };
 
         Ok(node)

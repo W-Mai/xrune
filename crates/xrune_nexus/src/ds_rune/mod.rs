@@ -33,6 +33,13 @@ pub trait DsRune {
     /// Inscribe a niche node — `@name { ... }` at the call site.
     fn inscribe_niche(&mut self, name: &syn::Ident, children: &[DsTreeRef]);
 
+    /// Inscribe a match node — `match expr { Pat => { ... } ... }`.
+    fn inscribe_match(
+        &mut self,
+        scrutinee: &syn::Expr,
+        arms: &[crate::ds_node::ds_match::DsMatchArm],
+    );
+
     /// Seal the rune — finalize and return the generated TokenStream.
     fn seal(self) -> proc_macro2::TokenStream;
 }

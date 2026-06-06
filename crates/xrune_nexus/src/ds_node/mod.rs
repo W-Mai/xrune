@@ -3,6 +3,7 @@ pub mod ds_context;
 pub mod ds_custom_token;
 pub mod ds_if;
 pub mod ds_iter;
+pub mod ds_match;
 pub mod ds_niche;
 pub mod ds_root;
 pub mod ds_traits;
@@ -49,6 +50,7 @@ impl Debug for DsTree {
                 DsNode::If(_) => "If",
                 DsNode::Iter(_) => "Iter",
                 DsNode::Niche(_) => "Niche",
+                DsNode::Match(_) => "Match",
             },
         };
         f.write_fmt(format_args!(
@@ -62,7 +64,7 @@ impl Parse for DsTree {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let node = DsNode::parse(input)?;
 
-        let needs_body = !matches!(node, DsNode::Widget(_));
+        let needs_body = matches!(node, DsNode::If(_) | DsNode::Iter(_) | DsNode::Niche(_));
         let has_braces = input.peek(syn::token::Brace);
 
         let children = if needs_body || has_braces {
