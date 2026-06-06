@@ -16,7 +16,7 @@ impl DsRoot {
         // Legacy: find "parent" attr, or return unit expr
         self.context_attrs
             .iter()
-            .find(|a| a.name == "parent")
+            .find(|a| a.name.as_ref().is_some_and(|n| n == "parent"))
             .map(|a| a.value.clone())
             .unwrap_or_else(|| syn::parse_quote!(()))
     }
@@ -79,7 +79,10 @@ impl Parse for DsRoot {
                 ));
             }
 
-            let parent_attr = attrs.iter().find(|attr| attr.name == "parent").ok_or(err)?;
+            let parent_attr = attrs
+                .iter()
+                .find(|attr| attr.name.as_ref().is_some_and(|n| n == "parent"))
+                .ok_or(err)?;
             let parent = parent_attr.value.clone();
 
             let content = DsTree::parse(input)?.into_ref();

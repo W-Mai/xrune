@@ -3,17 +3,27 @@ use std::fmt::Debug;
 use syn::parse::{Parse, ParseStream};
 
 pub struct DsAttr {
-    pub name: syn::Ident,
+    pub name: Option<syn::Ident>,
     pub value: syn::Expr,
+}
+
+impl DsAttr {
+    pub fn name_str(&self) -> Option<String> {
+        self.name.as_ref().map(|n| n.to_string())
+    }
 }
 
 impl Debug for DsAttr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let DsAttr { name, value } = self;
+        let name_repr = match name {
+            Some(n) => n.to_string(),
+            None => "<positional>".to_string(),
+        };
         write!(
             f,
             "DsAttr {{ name: {}, value: {:?} }}",
-            name,
+            name_repr,
             value.to_token_stream().to_string()
         )
     }
@@ -26,11 +36,18 @@ pub struct DsAttrs {
 
 impl Parse for DsAttr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let name = input.parse::<syn::Ident>()?;
-        input.parse::<syn::Token![:]>()?;
-        let value = input.parse::<syn::Expr>()?;
-
-        Ok(DsAttr { name, value })
+        if input.peek(syn::Ident) && input.peek2(syn::Token![:]) {
+            let name = input.parse::<syn::Ident>()?;
+            input.parse::<syn::Token![:]>()?;
+            let value = input.parse::<syn::Expr>()?;
+            Ok(DsAttr {
+                name: Some(name),
+                value,
+            })
+        } else {
+            let value = input.parse::<syn::Expr>()?;
+            Ok(DsAttr { name: None, value })
+        }
     }
 }
 
@@ -56,7 +73,10 @@ impl Parse for DsAttrs {
 impl ToTokens for DsAttr {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let DsAttr { name, value } = self;
-        let name_string = name.to_string();
+        let name_string = match name {
+            Some(n) => n.to_string(),
+            None => "<positional>".to_string(),
+        };
         let token_string = quote! {
             println!("setAttribute({}, {})", #name_string, stringify!(#value));
         };

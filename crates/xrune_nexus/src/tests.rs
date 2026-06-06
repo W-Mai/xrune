@@ -12,7 +12,7 @@ mod tests {
     fn parse_single_attr() {
         let tokens = quote! { width: 100 };
         let attr: DsAttr = syn::parse2(tokens).unwrap();
-        assert_eq!(attr.name.to_string(), "width");
+        assert_eq!(attr.name.as_ref().unwrap().to_string(), "width");
     }
 
     #[test]
@@ -20,9 +20,9 @@ mod tests {
         let tokens = quote! { (width: 100, height: 200, color: "red") };
         let attrs: DsAttrs = syn::parse2(tokens).unwrap();
         assert_eq!(attrs.attrs.len(), 3);
-        assert_eq!(attrs.attrs[0].name.to_string(), "width");
-        assert_eq!(attrs.attrs[1].name.to_string(), "height");
-        assert_eq!(attrs.attrs[2].name.to_string(), "color");
+        assert_eq!(attrs.attrs[0].name.as_ref().unwrap().to_string(), "width");
+        assert_eq!(attrs.attrs[1].name.as_ref().unwrap().to_string(), "height");
+        assert_eq!(attrs.attrs[2].name.as_ref().unwrap().to_string(), "color");
     }
 
     #[test]
@@ -51,7 +51,10 @@ mod tests {
             DsNode::Widget(w) => {
                 assert_eq!(w.get_name().to_string(), "button");
                 assert_eq!(w.get_attrs().attrs.len(), 1);
-                assert_eq!(w.get_attrs().attrs[0].name.to_string(), "text");
+                assert_eq!(
+                    w.get_attrs().attrs[0].name.as_ref().unwrap().to_string(),
+                    "text"
+                );
             }
             _ => panic!("Expected Widget node"),
         }
@@ -124,7 +127,7 @@ mod tests {
         // Attribute values can be arbitrary expressions
         let tokens = quote! { height: 100 + A * 2 };
         let attr: DsAttr = syn::parse2(tokens).unwrap();
-        assert_eq!(attr.name.to_string(), "height");
+        assert_eq!(attr.name.as_ref().unwrap().to_string(), "height");
         // Value is a complex expression - just verify it parsed
     }
     #[test]

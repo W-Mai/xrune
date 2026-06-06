@@ -47,7 +47,10 @@ impl DsRune for DefaultRune {
         });
 
         for attr in attrs {
-            let attr_name = attr.name.to_string();
+            let attr_name = match &attr.name {
+                Some(n) => n.to_string(),
+                None => "<positional>".to_string(),
+            };
             let attr_value = &attr.value;
             self.tokens.extend(quote! {
                 println!("{}.set_{}({:?})", #name_string, #attr_name, #attr_value);

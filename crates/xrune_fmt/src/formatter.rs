@@ -17,8 +17,10 @@ pub fn format_dsl(input: &str, base_indent: &str) -> Option<String> {
     let indent2 = format!("{indent1}    ");
     for attr in root.get_context_attrs() {
         out.push_str(&indent2);
-        out.push_str(&attr.name.to_string());
-        out.push_str(": ");
+        if let Some(n) = &attr.name {
+            out.push_str(&n.to_string());
+            out.push_str(": ");
+        }
         out.push_str(&fmt_expr(&attr.value));
         out.push('\n');
     }
@@ -146,7 +148,10 @@ fn format_attrs(attrs: &[DsAttr], indent: &str, name_len: usize, out: &mut Strin
     // Check if original was multiline (first attr and last attr on different lines)
     let first_line = attrs
         .first()
-        .map(|a| a.name.span().start().line)
+        .map(|a| match &a.name {
+            Some(n) => n.span().start().line,
+            None => syn::spanned::Spanned::span(&a.value).start().line,
+        })
         .unwrap_or(0);
     let last_line = attrs
         .last()
@@ -166,11 +171,11 @@ fn format_attrs(attrs: &[DsAttr], indent: &str, name_len: usize, out: &mut Strin
     let attr_strs: Vec<String> = attrs
         .iter()
         .map(|attr| {
-            format!(
-                "{}: {}",
-                attr.name,
-                fmt_expr_indented(&attr.value, &attr_indent)
-            )
+            let value = fmt_expr_indented(&attr.value, &attr_indent);
+            match &attr.name {
+                Some(n) => format!("{n}: {value}"),
+                None => value,
+            }
         })
         .collect();
 
