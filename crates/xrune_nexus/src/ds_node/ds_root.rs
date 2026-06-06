@@ -54,14 +54,26 @@ impl Parse for DsRoot {
         if input.peek(syn::Token![:]) {
             input.parse::<syn::Token![:]>()?;
 
+            let header_span_for_check = input.fork().span();
+
             let mut attrs = Vec::<DsAttr>::new();
             let params;
-            syn::parenthesized!(params in input);
+            let paren = syn::parenthesized!(params in input);
             while !params.is_empty() {
                 attrs.push(params.parse()?);
                 if params.peek(syn::Token![:]) {
                     params.parse::<syn::Token![:]>()?;
                 }
+            }
+
+            if let Some(text) = paren.span.join().source_text()
+                && !text.contains('\n')
+                && attrs.len() > 1
+            {
+                return Err(syn::Error::new(
+                    header_span_for_check,
+                    "root header must be multi-line — put each context attr on its own line, e.g.\n\n    :(\n        attr1: value1\n        attr2: value2\n    :)\n",
+                ));
             }
 
             let parent_attr = attrs.iter().find(|attr| attr.name == "parent").ok_or(err)?;
