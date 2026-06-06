@@ -101,6 +101,17 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
             out.push_str(indent);
             out.push_str("}\n");
         }
+        DsNode::Niche(niche_node) => {
+            out.push_str(indent);
+            out.push('@');
+            out.push_str(&niche_node.get_name().to_string());
+            out.push_str(" {\n");
+            for child in borrowed.get_children() {
+                format_tree(child, &child_indent, out);
+            }
+            out.push_str(indent);
+            out.push_str("}\n");
+        }
     }
 }
 

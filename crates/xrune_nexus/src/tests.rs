@@ -186,4 +186,37 @@ mod tests {
         let result = syn::parse2::<DsTree>(tokens);
         assert!(result.is_err());
     }
+
+    #[test]
+    fn parse_niche_node() {
+        let tokens = quote! {
+            @header { Text (text: "hi") {} }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Niche(n) => assert_eq!(n.get_name().to_string(), "header"),
+            _ => panic!("Expected Niche node"),
+        }
+        assert_eq!(tree.get_children().len(), 1);
+    }
+
+    #[test]
+    fn parse_niche_multiple_children() {
+        let tokens = quote! {
+            @body { Text (text: "a") {} Text (text: "b") {} }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Niche(_) => {}
+            _ => panic!("Expected Niche"),
+        }
+        assert_eq!(tree.get_children().len(), 2);
+    }
+
+    #[test]
+    fn error_niche_without_body() {
+        let tokens = quote! { @header };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(result.is_err());
+    }
 }

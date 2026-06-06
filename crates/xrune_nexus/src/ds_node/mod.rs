@@ -3,6 +3,7 @@ pub mod ds_context;
 pub mod ds_custom_token;
 pub mod ds_if;
 pub mod ds_iter;
+pub mod ds_niche;
 pub mod ds_root;
 pub mod ds_traits;
 pub mod ds_widget;
@@ -47,6 +48,7 @@ impl Debug for DsTree {
                 DsNode::Widget(_) => "Widget",
                 DsNode::If(_) => "If",
                 DsNode::Iter(_) => "Iter",
+                DsNode::Niche(_) => "Niche",
             },
         };
         f.write_fmt(format_args!(

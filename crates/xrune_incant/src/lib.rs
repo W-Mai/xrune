@@ -96,6 +96,20 @@ impl DsRune for DefaultRune {
         });
     }
 
+    fn inscribe_niche(&mut self, name: &syn::Ident, children: &[xrune_nexus::ds_node::DsTreeRef]) {
+        use quote::quote;
+        let name_str = name.to_string();
+        self.tokens.extend(quote! {
+            println!("@{} {{", #name_str);
+        });
+        for child in children {
+            decipher(child, self);
+        }
+        self.tokens.extend(quote! {
+            println!("}}");
+        });
+    }
+
     fn seal(self) -> proc_macro2::TokenStream {
         self.tokens
     }

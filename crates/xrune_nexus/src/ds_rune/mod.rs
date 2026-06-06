@@ -30,6 +30,9 @@ pub trait DsRune {
         children: &[DsTreeRef],
     );
 
+    /// Inscribe a niche node — `@name { ... }` at the call site.
+    fn inscribe_niche(&mut self, name: &syn::Ident, children: &[DsTreeRef]);
+
     /// Seal the rune — finalize and return the generated TokenStream.
     fn seal(self) -> proc_macro2::TokenStream;
 }

@@ -1,5 +1,6 @@
 use super::ds_if::DsIf;
 use super::ds_iter::DsIter;
+use super::ds_niche::DsNiche;
 use super::ds_traits::DsNodeIsMe;
 use super::ds_widget::DsWidget;
 use quote::ToTokens;
@@ -11,6 +12,7 @@ pub enum DsNodeType {
     Widget,
     If,
     Iter,
+    Niche,
 }
 
 pub enum DsNode {
@@ -18,6 +20,7 @@ pub enum DsNode {
     Widget(DsWidget),
     If(DsIf),
     Iter(DsIter),
+    Niche(DsNiche),
 }
 
 impl Debug for DsNode {
@@ -27,13 +30,16 @@ impl Debug for DsNode {
             DsNode::Widget(widget) => write!(f, "Widget({widget:?})"),
             DsNode::If(if_node) => write!(f, "If({if_node:?})"),
             DsNode::Iter(iter) => write!(f, "Iter({iter:?})"),
+            DsNode::Niche(niche) => write!(f, "Niche({niche:?})"),
         }
     }
 }
 
 impl DsNodeType {
     fn what_type(input: ParseStream) -> DsNodeType {
-        if DsWidget::is_me(input) {
+        if DsNiche::is_me(input) {
+            DsNodeType::Niche
+        } else if DsWidget::is_me(input) {
             DsNodeType::Widget
         } else if DsIf::is_me(input) {
             DsNodeType::If
@@ -53,6 +59,7 @@ impl Parse for DsNode {
             DsNodeType::Widget => DsNode::Widget(input.parse()?),
             DsNodeType::If => DsNode::If(input.parse()?),
             DsNodeType::Iter => DsNode::Iter(input.parse()?),
+            DsNodeType::Niche => DsNode::Niche(input.parse()?),
         };
 
         Ok(node)
