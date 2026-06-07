@@ -292,4 +292,89 @@ mod tests {
         let result = syn::parse2::<crate::ds_node::DsRoot>(tokens);
         assert!(result.is_ok(), "no-comma form must still parse");
     }
+
+    #[test]
+    fn parse_on_node_no_args() {
+        let tokens = quote! {
+            on Tap { call_me() }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::On(on) => {
+                assert_eq!(on.get_name().to_string(), "Tap");
+                assert!(on.get_qualifier().is_none());
+                assert_eq!(on.get_args().len(), 0);
+            }
+            _ => panic!("Expected On node"),
+        }
+    }
+
+    #[test]
+    fn parse_on_node_with_args() {
+        let tokens = quote! {
+            on Tap(2) { fire() }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::On(on) => {
+                assert_eq!(on.get_name().to_string(), "Tap");
+                assert_eq!(on.get_args().len(), 1);
+            }
+            _ => panic!("Expected On node"),
+        }
+    }
+
+    #[test]
+    fn parse_on_node_qualified() {
+        let tokens = quote! {
+            on Slider::ValueChanged { persist(*new) }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::On(on) => {
+                assert_eq!(on.get_name().to_string(), "ValueChanged");
+                assert_eq!(on.get_qualifier().unwrap().to_string(), "Slider");
+            }
+            _ => panic!("Expected qualified On node"),
+        }
+    }
+
+    #[test]
+    fn error_on_node_without_body() {
+        let tokens = quote! { on Tap };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(result.is_err(), "on without {{}} body must fail");
+    }
+
+    #[test]
+    fn error_on_node_multi_qualifier() {
+        let tokens = quote! {
+            on Foo::Bar::Baz { x() }
+        };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(result.is_err(), "multi-segment qualifier must fail");
+    }
+
+    #[test]
+    fn parse_on_inside_widget_body() {
+        let tokens = quote! {
+            Slider (min: 0, max: 100) {
+                on Tap { fire_a() }
+                on Slider::ValueChanged { fire_b() }
+            }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Widget(_) => {}
+            _ => panic!("Expected Widget root"),
+        }
+        let children = tree.get_children();
+        assert_eq!(children.len(), 2, "two on handlers");
+        for child in children {
+            match child.borrow().get_node() {
+                DsNode::On(_) => {}
+                _ => panic!("Expected On child"),
+            }
+        }
+    }
 }

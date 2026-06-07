@@ -36,5 +36,13 @@ pub fn decipher(tree: &DsTreeRef, rune: &mut dyn DsRune) {
         DsNode::Match(match_node) => {
             rune.inscribe_match(match_node.get_scrutinee(), match_node.get_arms());
         }
+        DsNode::On(on_node) => {
+            rune.inscribe_on(
+                on_node.get_qualifier(),
+                on_node.get_name(),
+                on_node.get_args(),
+                on_node.get_body(),
+            );
+        }
     }
 }

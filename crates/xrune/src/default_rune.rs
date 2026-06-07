@@ -146,6 +146,24 @@ impl DsRune for DefaultRune {
         });
     }
 
+    fn inscribe_on(
+        &mut self,
+        qualifier: Option<&syn::Ident>,
+        name: &syn::Ident,
+        args: &[syn::Expr],
+        body: &syn::Block,
+    ) {
+        let header = match qualifier {
+            Some(q) => format!("on {q}::{name}"),
+            None => format!("on {name}"),
+        };
+        let arity = args.len();
+        let stmts = body.stmts.len();
+        self.tokens.extend(quote! {
+            println!("{}({} args, {} stmts)", #header, #arity, #stmts);
+        });
+    }
+
     fn seal(self) -> TokenStream {
         self.tokens
     }

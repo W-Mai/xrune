@@ -5,6 +5,7 @@ pub mod ds_if;
 pub mod ds_iter;
 pub mod ds_match;
 pub mod ds_niche;
+pub mod ds_on;
 pub mod ds_root;
 pub mod ds_traits;
 pub mod ds_widget;
@@ -51,6 +52,7 @@ impl Debug for DsTree {
                 DsNode::Iter(_) => "Iter",
                 DsNode::Niche(_) => "Niche",
                 DsNode::Match(_) => "Match",
+                DsNode::On(_) => "On",
             },
         };
         f.write_fmt(format_args!(

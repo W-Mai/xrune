@@ -40,6 +40,15 @@ pub trait DsRune {
         arms: &[crate::ds_node::ds_match::DsMatchArm],
     );
 
+    /// Inscribe an `on` handler — `on Path::EventKind(args) { body }`.
+    fn inscribe_on(
+        &mut self,
+        qualifier: Option<&syn::Ident>,
+        name: &syn::Ident,
+        args: &[syn::Expr],
+        body: &syn::Block,
+    );
+
     /// Seal the rune — finalize and return the generated TokenStream.
     fn seal(self) -> proc_macro2::TokenStream;
 }
