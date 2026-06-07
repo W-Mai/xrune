@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.5.1] - 2026-06-07
+
+`on EventKind` syntax now attaches handlers to widgets unambiguously. The
+1.5.0 form (where `on` could nest inside a widget body, leaving "is this
+attached to the widget or one of its children?" ambiguous) is rejected.
+1.5.0 has been yanked.
+
+### Added
+
+- **Form C** — inline position between attrs and children body:
+  `Widget() on EventKind { body } { children }`. Multiple `on` clauses
+  stack here.
+- **Form B** — modifier-chain position after the widget:
+  `Widget() {} on EventKind { body }`. Multiple `on` clauses chain.
+  Inside a nested body, `on` attaches to the nearest preceding sibling
+  widget.
+- `DsWidget::get_on_handlers()` exposes the collected handlers; both
+  Form B and Form C populate the same `Vec<DsOn>`.
+- `DsRune::inscribe_widget` takes `on_handlers: &[DsOn]` so generators
+  see every handler attached to the widget being inscribed.
+
+### Removed
+
+- `DsRune::inscribe_on` — replaced by the `on_handlers` parameter on
+  `inscribe_widget`. Implementations no longer track on-handlers
+  separately from the widget they belong to.
+- `DsNode::On` variant — `on` is no longer a tree-level node.
+
+### Fixed
+
+- A stray top-level `on EventKind` (no preceding widget) now produces a
+  parse error instead of panicking.
+
 ## [1.5.0] - 2026-06-07
 
 DSL gains an `on EventKind(args) { body }` node that hosts can lower into
