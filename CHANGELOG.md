@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.5.0] - 2026-06-07
+
+DSL gains an `on EventKind(args) { body }` node that hosts can lower into
+event handlers. `body` is parsed as a `syn::Block` so consumers receive a
+Rust-shaped block they can splice into generated handler fns directly.
+
+### Added
+
+- **`on EventKind { body }` nodes** (`DsOn`) — sit alongside widget /
+  niche / match / if / iter as DsTree-level nodes. Body is `syn::Block`;
+  args is `Vec<syn::Expr>`; an optional single-segment `qualifier` carries
+  the `Path::` prefix.
+- **`on Path::EventKind { body }` qualified form** — `qualifier` is
+  `Some(ident)` for the prefix; multi-segment paths (`Foo::Bar::Baz`)
+  raise a parse error.
+- **`on EventKind(p1, p2, ...) { body }` parameter list** — comma-separated
+  expressions in the parens, exposed via `DsOn::get_args()`.
+- **`DsRune::inscribe_on(qualifier, name, args, body)`** — new trait method
+  every Rune impl must provide.
+- **`on` joins `walk` / `with` as a custom keyword** — `is_custom_keyword`
+  routes `on …` to `DsOn::parse` before the widget peek, so `on Foo` is
+  not mistaken for a widget named `on`.
+
+### Breaking
+
+- `DsRune` adds `inscribe_on` (no default impl); existing impls must add it.
+
 ## [1.4.0] - 2026-06-07
 
 DSL gains three new node types — niche, match, and headerless widgets — plus optional commas in the root header and unnamed positional attrs. Host runes (mirui-incant style codegen, xrune-fmt style printing) need to handle two new `DsRune` methods and an `Option`-shaped attr name.
