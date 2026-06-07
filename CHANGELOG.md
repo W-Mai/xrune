@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.4.0] - 2026-06-07
+
+DSL gains three new node types — niche, match, and headerless widgets — plus optional commas in the root header and unnamed positional attrs. Host runes (mirui-incant style codegen, xrune-fmt style printing) need to handle two new `DsRune` methods and an `Option`-shaped attr name.
+
+### Added
+
+- **`@name { ... }` niche nodes** (`DsNiche`) — anchor-routed children, parsed as `@`-prefix + ident + brace block. Expose `DsNiche::get_name()` + children.
+- **`match expr { Pat => { ... } ... }` match nodes** (`DsMatch`, `DsMatchArm`) — Rust-style pattern matching inside the DSL. `DsMatch::get_scrutinee()`, `get_arms()`; each `DsMatchArm` carries its own `syn::Pat` + children sub-tree.
+- **Optional empty children block on widget nodes** — `Foo (attrs)` (no `{}`) parses as a Widget with no children. `if` / `walk` / `@niche` / `match` still require their bodies — they'd be no-ops otherwise.
+- **Optional commas in the root header** — `:( parent: r, world: w, :)` and the existing comma-less form both parse.
+- **Multi-line root header is enforced** — `:(parent: r world: w:)` on a single line errors at parse time when there's more than one context attr; single-attr headers stay relaxed.
+- **`DsRune::inscribe_niche` and `inscribe_match`** — new trait methods every Rune impl must provide.
+
+### Changed
+
+- **`DsAttr::name` is now `Option<syn::Ident>`** to support positional args (e.g. `Text("hi")`). The parser tries the `name: value` shape first and falls back to bare `value` with `name = None`. Existing `name: value` callers parse identically; downstream code that read `attr.name` directly needs to match on the Option.
+- **`DsTree::parse` no longer demands an outer brace block on Widget and Match nodes** — they consume their own bodies. If / Iter / Niche still go through `syn::braced!`.
+
+### Breaking
+
+- `DsAttr.name: Option<Ident>` (was `Ident`) — every consumer that read `.name` needs a match.
+- `DsRune` adds two methods (no default impls); existing impls must add `inscribe_niche` and `inscribe_match`.
+- `xrune-nexus` now needs `syn` with the `full` feature (`syn::Pat` is gated behind it).
+
 ## [1.2.0] - 2026-05-08
 
 ### Added
