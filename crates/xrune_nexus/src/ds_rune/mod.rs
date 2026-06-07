@@ -2,6 +2,7 @@ pub mod decipher;
 
 use crate::ds_node::DsTreeRef;
 use crate::ds_node::ds_attr::DsAttr;
+use crate::ds_node::ds_on::DsOn;
 
 /// DsRune — the codegen interface.
 /// Implement this trait to generate code from the parsed DSL tree.
@@ -10,12 +11,13 @@ pub trait DsRune {
     /// Inscribe the root node (provides the parent expression).
     fn inscribe_root(&mut self, parent_expr: &syn::Expr);
 
-    /// Inscribe a widget node.
+    /// Inscribe a widget node. `on_handlers` collects every `on EventKind` clause attached to the widget.
     fn inscribe_widget(
         &mut self,
         name: &syn::Ident,
         attrs: &[DsAttr],
         enchants: &[syn::Expr],
+        on_handlers: &[DsOn],
         children: &[DsTreeRef],
     );
 
@@ -38,15 +40,6 @@ pub trait DsRune {
         &mut self,
         scrutinee: &syn::Expr,
         arms: &[crate::ds_node::ds_match::DsMatchArm],
-    );
-
-    /// Inscribe an `on` handler — `on Path::EventKind(args) { body }`.
-    fn inscribe_on(
-        &mut self,
-        qualifier: Option<&syn::Ident>,
-        name: &syn::Ident,
-        args: &[syn::Expr],
-        body: &syn::Block,
     );
 
     /// Seal the rune — finalize and return the generated TokenStream.

@@ -66,6 +66,31 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
                 out.push(']');
             }
 
+            for on in widget.get_on_handlers() {
+                out.push('\n');
+                out.push_str(&child_indent);
+                out.push_str("on ");
+                if let Some(q) = on.get_qualifier() {
+                    out.push_str(&q.to_string());
+                    out.push_str("::");
+                }
+                out.push_str(&on.get_name().to_string());
+                let args = on.get_args();
+                if !args.is_empty() {
+                    out.push('(');
+                    for (i, a) in args.iter().enumerate() {
+                        if i > 0 {
+                            out.push_str(", ");
+                        }
+                        out.push_str(&fmt_expr(a));
+                    }
+                    out.push(')');
+                }
+                out.push(' ');
+                let body = on.get_body();
+                out.push_str(&quote::quote!(#body).to_string());
+            }
+
             // Children
             let children = borrowed.get_children();
             if children.is_empty() {
@@ -133,30 +158,6 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
             }
             out.push_str(indent);
             out.push_str("}\n");
-        }
-        DsNode::On(on_node) => {
-            out.push_str(indent);
-            out.push_str("on ");
-            if let Some(q) = on_node.get_qualifier() {
-                out.push_str(&q.to_string());
-                out.push_str("::");
-            }
-            out.push_str(&on_node.get_name().to_string());
-            let args = on_node.get_args();
-            if !args.is_empty() {
-                out.push('(');
-                for (i, a) in args.iter().enumerate() {
-                    if i > 0 {
-                        out.push_str(", ");
-                    }
-                    out.push_str(&fmt_expr(a));
-                }
-                out.push(')');
-            }
-            out.push(' ');
-            let body = on_node.get_body();
-            out.push_str(&quote::quote!(#body).to_string());
-            out.push('\n');
         }
     }
 }

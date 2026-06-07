@@ -294,87 +294,191 @@ mod tests {
     }
 
     #[test]
-    fn parse_on_node_no_args() {
+    fn form_c_on_after_attrs_before_body() {
         let tokens = quote! {
-            on Tap { call_me() }
-        };
-        let tree: DsTree = syn::parse2(tokens).unwrap();
-        match tree.get_node() {
-            DsNode::On(on) => {
-                assert_eq!(on.get_name().to_string(), "Tap");
-                assert!(on.get_qualifier().is_none());
-                assert_eq!(on.get_args().len(), 0);
-            }
-            _ => panic!("Expected On node"),
-        }
-    }
-
-    #[test]
-    fn parse_on_node_with_args() {
-        let tokens = quote! {
-            on Tap(2) { fire() }
-        };
-        let tree: DsTree = syn::parse2(tokens).unwrap();
-        match tree.get_node() {
-            DsNode::On(on) => {
-                assert_eq!(on.get_name().to_string(), "Tap");
-                assert_eq!(on.get_args().len(), 1);
-            }
-            _ => panic!("Expected On node"),
-        }
-    }
-
-    #[test]
-    fn parse_on_node_qualified() {
-        let tokens = quote! {
-            on Slider::ValueChanged { persist(*new) }
-        };
-        let tree: DsTree = syn::parse2(tokens).unwrap();
-        match tree.get_node() {
-            DsNode::On(on) => {
-                assert_eq!(on.get_name().to_string(), "ValueChanged");
-                assert_eq!(on.get_qualifier().unwrap().to_string(), "Slider");
-            }
-            _ => panic!("Expected qualified On node"),
-        }
-    }
-
-    #[test]
-    fn error_on_node_without_body() {
-        let tokens = quote! { on Tap };
-        let result = syn::parse2::<DsTree>(tokens);
-        assert!(result.is_err(), "on without {{}} body must fail");
-    }
-
-    #[test]
-    fn error_on_node_multi_qualifier() {
-        let tokens = quote! {
-            on Foo::Bar::Baz { x() }
-        };
-        let result = syn::parse2::<DsTree>(tokens);
-        assert!(result.is_err(), "multi-segment qualifier must fail");
-    }
-
-    #[test]
-    fn parse_on_inside_widget_body() {
-        let tokens = quote! {
-            Slider (min: 0, max: 100) {
+            Slider (min: 0, max: 100)
                 on Tap { fire_a() }
-                on Slider::ValueChanged { fire_b() }
+                on ValueChanged(2) { fire_b() }
+                {}
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        let widget = match tree.get_node() {
+            DsNode::Widget(w) => w,
+            _ => panic!("Expected Widget node"),
+        };
+        let handlers = widget.get_on_handlers();
+        assert_eq!(handlers.len(), 2, "two on handlers in Form C");
+        assert_eq!(handlers[0].get_name().to_string(), "Tap");
+        assert_eq!(handlers[1].get_name().to_string(), "ValueChanged");
+        assert_eq!(handlers[1].get_args().len(), 1);
+    }
+
+    #[test]
+    fn form_c_qualified_event_name() {
+        let tokens = quote! {
+            Slider (min: 0, max: 100)
+                on Slider::ValueChanged { persist(*new) }
+                {}
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        let widget = match tree.get_node() {
+            DsNode::Widget(w) => w,
+            _ => panic!("Expected Widget"),
+        };
+        let handlers = widget.get_on_handlers();
+        assert_eq!(handlers.len(), 1);
+        assert_eq!(handlers[0].get_qualifier().unwrap().to_string(), "Slider",);
+        assert_eq!(handlers[0].get_name().to_string(), "ValueChanged");
+    }
+
+    #[test]
+    fn form_b_on_after_widget_body_at_root() {
+        let tokens = quote! {
+            View () {} on Tap { fire() }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        let widget = match tree.get_node() {
+            DsNode::Widget(w) => w,
+            _ => panic!("Expected Widget"),
+        };
+        let handlers = widget.get_on_handlers();
+        assert_eq!(
+            handlers.len(),
+            1,
+            "Form B: trailing on attaches to root widget"
+        );
+        assert_eq!(handlers[0].get_name().to_string(), "Tap");
+    }
+
+    #[test]
+    fn form_b_chained_modifiers() {
+        let tokens = quote! {
+            Button (text: "x") {}
+                on Tap { fire_a() }
+                on LongPress { fire_b() }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        let widget = match tree.get_node() {
+            DsNode::Widget(w) => w,
+            _ => panic!("Expected Widget"),
+        };
+        let handlers = widget.get_on_handlers();
+        assert_eq!(
+            handlers.len(),
+            2,
+            "Form B chain: two on modifiers attach to same widget"
+        );
+        assert_eq!(handlers[0].get_name().to_string(), "Tap");
+        assert_eq!(handlers[1].get_name().to_string(), "LongPress");
+    }
+
+    #[test]
+    fn form_b_inside_nested_body_attaches_to_previous_sibling() {
+        let tokens = quote! {
+            Container () {
+                Child () {} on Tap { handle() }
             }
         };
         let tree: DsTree = syn::parse2(tokens).unwrap();
-        match tree.get_node() {
-            DsNode::Widget(_) => {}
-            _ => panic!("Expected Widget root"),
-        }
+        let container = match tree.get_node() {
+            DsNode::Widget(w) => w,
+            _ => panic!("Expected Container Widget"),
+        };
+        assert_eq!(
+            container.get_on_handlers().len(),
+            0,
+            "Container itself has no on handler"
+        );
         let children = tree.get_children();
-        assert_eq!(children.len(), 2, "two on handlers");
-        for child in children {
-            match child.borrow().get_node() {
-                DsNode::On(_) => {}
-                _ => panic!("Expected On child"),
+        assert_eq!(children.len(), 1, "Container has one child Child");
+        let child_borrow = children[0].borrow();
+        let child = match child_borrow.get_node() {
+            DsNode::Widget(w) => w,
+            _ => panic!("Expected Child Widget"),
+        };
+        assert_eq!(
+            child.get_on_handlers().len(),
+            1,
+            "on attaches to nearest preceding sibling Child, not Container",
+        );
+    }
+
+    #[test]
+    fn form_b_plus_c_mixed_on_same_widget() {
+        let tokens = quote! {
+            View ()
+                on Tap { a() }
+                {}
+                on LongPress { b() }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        let widget = match tree.get_node() {
+            DsNode::Widget(w) => w,
+            _ => panic!("Expected Widget"),
+        };
+        let handlers = widget.get_on_handlers();
+        assert_eq!(handlers.len(), 2, "Form B + Form C handlers all stick");
+        assert_eq!(handlers[0].get_name().to_string(), "Tap");
+        assert_eq!(handlers[1].get_name().to_string(), "LongPress");
+    }
+
+    #[test]
+    fn error_form_a_on_inside_body_rejected() {
+        let tokens = quote! {
+            View () {
+                on Tap { fire() }
             }
-        }
+        };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(
+            result.is_err(),
+            "Form A (on nested inside body without preceding sibling) must fail"
+        );
+    }
+
+    #[test]
+    fn error_on_at_root_without_widget() {
+        let tokens = quote! { on Tap { fire() } };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(
+            result.is_err(),
+            "bare `on` with no preceding widget must fail"
+        );
+    }
+
+    #[test]
+    fn error_form_c_no_body() {
+        let tokens = quote! {
+            View () on Tap { fire() }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        let widget = match tree.get_node() {
+            DsNode::Widget(w) => w,
+            _ => panic!("Expected Widget"),
+        };
+        assert_eq!(widget.get_on_handlers().len(), 1);
+        assert_eq!(
+            tree.get_children().len(),
+            0,
+            "Form C without children body parses as widget with empty body"
+        );
+    }
+
+    #[test]
+    fn error_on_no_braces_in_handler() {
+        let tokens = quote! {
+            View () on Tap call_me() {}
+        };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(result.is_err(), "on EventKind without {{}} body must fail",);
+    }
+
+    #[test]
+    fn error_on_multi_qualifier_segment() {
+        let tokens = quote! {
+            View () on Foo::Bar::Baz { x() } {}
+        };
+        let result = syn::parse2::<DsTree>(tokens);
+        assert!(result.is_err(), "multi-segment qualifier must fail",);
     }
 }

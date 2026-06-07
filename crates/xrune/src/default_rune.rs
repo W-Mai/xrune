@@ -41,6 +41,7 @@ impl DsRune for DefaultRune {
         name: &syn::Ident,
         attrs: &[DsAttr],
         _enchants: &[syn::Expr],
+        on_handlers: &[xrune_nexus::ds_node::ds_on::DsOn],
         children: &[DsTreeRef],
     ) {
         let name_string = name.to_string();
@@ -58,6 +59,14 @@ impl DsRune for DefaultRune {
             let attr_value = &attr.value;
             self.tokens.extend(quote! {
                 println!("{}.set_{}({:?})", #name_string, #attr_name, #attr_value);
+            });
+        }
+
+        for on in on_handlers {
+            let event_name = on.get_name().to_string();
+            let arity = on.get_args().len();
+            self.tokens.extend(quote! {
+                println!("{}.on_{}({} args)", #name_string, #event_name, #arity);
             });
         }
 
@@ -143,24 +152,6 @@ impl DsRune for DefaultRune {
         }
         self.tokens.extend(quote! {
             println!("}}");
-        });
-    }
-
-    fn inscribe_on(
-        &mut self,
-        qualifier: Option<&syn::Ident>,
-        name: &syn::Ident,
-        args: &[syn::Expr],
-        body: &syn::Block,
-    ) {
-        let header = match qualifier {
-            Some(q) => format!("on {q}::{name}"),
-            None => format!("on {name}"),
-        };
-        let arity = args.len();
-        let stmts = body.stmts.len();
-        self.tokens.extend(quote! {
-            println!("{}({} args, {} stmts)", #header, #arity, #stmts);
         });
     }
 

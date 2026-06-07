@@ -2,7 +2,6 @@ use super::ds_if::DsIf;
 use super::ds_iter::DsIter;
 use super::ds_match::DsMatch;
 use super::ds_niche::DsNiche;
-use super::ds_on::DsOn;
 use super::ds_traits::DsNodeIsMe;
 use super::ds_widget::DsWidget;
 use quote::ToTokens;
@@ -16,7 +15,6 @@ pub enum DsNodeType {
     Iter,
     Niche,
     Match,
-    On,
 }
 
 pub enum DsNode {
@@ -26,7 +24,6 @@ pub enum DsNode {
     Iter(DsIter),
     Niche(DsNiche),
     Match(DsMatch),
-    On(DsOn),
 }
 
 impl Debug for DsNode {
@@ -38,34 +35,38 @@ impl Debug for DsNode {
             DsNode::Iter(iter) => write!(f, "Iter({iter:?})"),
             DsNode::Niche(niche) => write!(f, "Niche({niche:?})"),
             DsNode::Match(match_node) => write!(f, "Match({match_node:?})"),
-            DsNode::On(on) => write!(f, "On({on:?})"),
         }
     }
 }
 
 impl DsNodeType {
-    fn what_type(input: ParseStream) -> DsNodeType {
+    fn what_type(input: ParseStream) -> syn::Result<DsNodeType> {
+        use super::ds_on::DsOn;
         if DsNiche::is_me(input) {
-            DsNodeType::Niche
+            Ok(DsNodeType::Niche)
         } else if DsMatch::is_me(input) {
-            DsNodeType::Match
-        } else if DsOn::is_me(input) {
-            DsNodeType::On
+            Ok(DsNodeType::Match)
         } else if DsWidget::is_me(input) {
-            DsNodeType::Widget
+            Ok(DsNodeType::Widget)
         } else if DsIf::is_me(input) {
-            DsNodeType::If
+            Ok(DsNodeType::If)
         } else if DsIter::is_me(input) {
-            DsNodeType::Iter
+            Ok(DsNodeType::Iter)
+        } else if DsOn::is_me(input) {
+            Err(input.error(
+                "`on EventKind` can only follow a widget; \
+                 use `Widget() {} on EventKind { ... }` or \
+                 `Widget() on EventKind { ... } {}`",
+            ))
         } else {
-            panic!("Unknown type of DsTree")
+            Err(input.error("expected widget / if / walk / match / @niche"))
         }
     }
 }
 
 impl Parse for DsNode {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let tree_type = DsNodeType::what_type(input);
+        let tree_type = DsNodeType::what_type(input)?;
 
         let node = match tree_type {
             DsNodeType::Widget => DsNode::Widget(input.parse()?),
@@ -73,7 +74,6 @@ impl Parse for DsNode {
             DsNodeType::Iter => DsNode::Iter(input.parse()?),
             DsNodeType::Niche => DsNode::Niche(input.parse()?),
             DsNodeType::Match => DsNode::Match(input.parse()?),
-            DsNodeType::On => DsNode::On(input.parse()?),
         };
 
         Ok(node)

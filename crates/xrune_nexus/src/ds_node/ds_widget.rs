@@ -1,4 +1,5 @@
 use super::ds_attr::DsAttrs;
+use super::ds_on::DsOn;
 use super::ds_traits::DsNodeIsMe;
 use crate::ds_node::ds_custom_token::is_custom_keyword;
 use syn::parse::{Parse, ParseStream};
@@ -7,6 +8,7 @@ pub struct DsWidget {
     name: syn::Ident,
     attrs: DsAttrs,
     enchants: Vec<syn::Expr>,
+    on_handlers: Vec<DsOn>,
 }
 
 impl std::fmt::Debug for DsWidget {
@@ -15,6 +17,7 @@ impl std::fmt::Debug for DsWidget {
             .field("name", &self.name.to_string())
             .field("attrs", &self.attrs)
             .field("enchants_count", &self.enchants.len())
+            .field("on_handlers", &self.on_handlers.len())
             .finish()
     }
 }
@@ -31,6 +34,14 @@ impl DsWidget {
     pub fn get_enchants(&self) -> &[syn::Expr] {
         &self.enchants
     }
+
+    pub fn get_on_handlers(&self) -> &[DsOn] {
+        &self.on_handlers
+    }
+
+    pub(crate) fn append_on_handler(&mut self, handler: DsOn) {
+        self.on_handlers.push(handler);
+    }
 }
 
 impl Parse for DsWidget {
@@ -38,7 +49,6 @@ impl Parse for DsWidget {
         let name = input.parse::<syn::Ident>()?;
         let attrs = input.parse::<DsAttrs>()?;
 
-        // Optional enchants: [expr, expr, ...]
         let enchants = if input.peek(syn::token::Bracket) {
             let content;
             syn::bracketed!(content in input);
@@ -54,10 +64,16 @@ impl Parse for DsWidget {
             Vec::new()
         };
 
+        let mut on_handlers = Vec::new();
+        while DsOn::is_me(input) {
+            on_handlers.push(input.parse::<DsOn>()?);
+        }
+
         Ok(DsWidget {
             name,
             attrs,
             enchants,
+            on_handlers,
         })
     }
 }

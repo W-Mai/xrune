@@ -52,7 +52,6 @@ impl Debug for DsTree {
                 DsNode::Iter(_) => "Iter",
                 DsNode::Niche(_) => "Niche",
                 DsNode::Match(_) => "Match",
-                DsNode::On(_) => "On",
             },
         };
         f.write_fmt(format_args!(
@@ -64,7 +63,10 @@ impl Debug for DsTree {
 
 impl Parse for DsTree {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let node = DsNode::parse(input)?;
+        use ds_on::DsOn;
+        use ds_traits::DsNodeIsMe;
+
+        let mut node = DsNode::parse(input)?;
 
         let needs_body = matches!(node, DsNode::If(_) | DsNode::Iter(_) | DsNode::Niche(_));
         let has_braces = input.peek(syn::token::Brace);
@@ -72,21 +74,69 @@ impl Parse for DsTree {
         let children = if needs_body || has_braces {
             let content;
             syn::braced!(content in input);
-            let mut children = Vec::new();
-            while !content.is_empty() {
-                let child = DsTree::parse(&content)?.into_ref();
-                child.borrow_mut().set_parent(child.clone());
-                children.push(child);
-            }
-            children
+            parse_children_with_trailing_on(&content)?
         } else {
             Vec::new()
         };
+
+        while DsOn::is_me(input) {
+            let on_handler = input.parse::<DsOn>()?;
+            match &mut node {
+                DsNode::Widget(w) => w.append_on_handler(on_handler),
+                _ => {
+                    return Err(syn::Error::new(
+                        on_handler.get_name().span(),
+                        "`on EventKind` can only follow a widget; if / walk / match / @niche \
+                         cannot carry handlers directly",
+                    ));
+                }
+            }
+        }
 
         Ok(DsTree {
             parent: None,
             node,
             children,
         })
+    }
+}
+
+pub(crate) fn parse_children_with_trailing_on(input: ParseStream) -> syn::Result<Vec<DsTreeRef>> {
+    use ds_on::DsOn;
+    use ds_traits::DsNodeIsMe;
+
+    let mut children = Vec::new();
+    while !input.is_empty() {
+        if DsOn::is_me(input) {
+            let on_handler = input.parse::<DsOn>()?;
+            let last = children.last().cloned().ok_or_else(|| {
+                syn::Error::new(
+                    on_handler.get_name().span(),
+                    "`on EventKind` must follow a widget; place it after a `Widget()` form, \
+                         or between attrs and children as `Widget() on EventKind {} {}`",
+                )
+            })?;
+            attach_on_to_last_widget(&last, on_handler)?;
+        } else {
+            let child = DsTree::parse(input)?.into_ref();
+            child.borrow_mut().set_parent(child.clone());
+            children.push(child);
+        }
+    }
+    Ok(children)
+}
+
+fn attach_on_to_last_widget(tree: &DsTreeRef, on_handler: ds_on::DsOn) -> syn::Result<()> {
+    let mut borrowed = tree.borrow_mut();
+    match &mut borrowed.node {
+        DsNode::Widget(w) => {
+            w.append_on_handler(on_handler);
+            Ok(())
+        }
+        _ => Err(syn::Error::new(
+            on_handler.get_name().span(),
+            "`on EventKind` can only follow a widget; if / walk / match / @niche cannot \
+             carry handlers directly",
+        )),
     }
 }
