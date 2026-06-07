@@ -92,7 +92,18 @@ fn cmd_publish(dry_run: bool) -> Result {
         if dry_run {
             args.push("--dry-run");
         }
-        cargo(&args)?;
+        match cargo_capture(&args) {
+            Ok(()) => {}
+            Err(e)
+                if {
+                    let msg = e.to_string();
+                    msg.contains("already uploaded") || msg.contains("already exists")
+                } =>
+            {
+                println!("  ⏭  {name} already on crates.io, skipping");
+            }
+            Err(e) => return Err(e),
+        }
         if !dry_run && i + 1 < crates.len() {
             println!("  → waiting 30s for crates.io index...");
             std::thread::sleep(std::time::Duration::from_secs(30));
@@ -217,6 +228,21 @@ fn project_root() -> String {
 
 fn cargo(args: &[&str]) -> Result {
     run_cmd("cargo", args)
+}
+
+fn cargo_capture(args: &[&str]) -> Result {
+    println!("  → cargo {}", args.join(" "));
+    let output = Command::new("cargo")
+        .args(args)
+        .current_dir(project_root())
+        .output()
+        .map_err(|e| format!("failed to run cargo: {e}"))?;
+    if output.status.success() {
+        return Ok(());
+    }
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    eprint!("{stderr}");
+    Err(stderr.into_owned().into())
 }
 
 fn run_cmd(cmd: &str, args: &[&str]) -> Result {
