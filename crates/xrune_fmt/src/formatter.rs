@@ -88,7 +88,7 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
                 }
                 out.push(' ');
                 let body = on.get_body();
-                out.push_str(&quote::quote!(#body).to_string());
+                out.push_str(&fmt_block(body, &child_indent));
             }
 
             // Children
@@ -274,4 +274,47 @@ fn fmt_expr_indented(expr: &syn::Expr, indent: &str) -> String {
     } else {
         result
     }
+}
+
+fn fmt_block(block: &syn::Block, indent: &str) -> String {
+    let tokens = quote::quote!(#block);
+    let code = format!("fn __xrune_fmt_block_wrapper() {tokens}");
+    let Ok(file) = syn::parse_str::<syn::File>(&code) else {
+        return tokens.to_string();
+    };
+    let formatted = prettyplease::unparse(&file);
+    let Some(open) = formatted.find('{') else {
+        return tokens.to_string();
+    };
+    let Some(close) = formatted.rfind('}') else {
+        return tokens.to_string();
+    };
+    if close <= open {
+        return tokens.to_string();
+    }
+    let inner = formatted[open + 1..close].trim_matches('\n');
+    let lines: Vec<&str> = inner.lines().map(|l| l.trim_end()).collect();
+    let drop_outer = lines
+        .iter()
+        .all(|l| l.is_empty() || l.starts_with("    "));
+
+    let body_indent = format!("{indent}    ");
+    let mut out = String::from("{\n");
+    for line in &lines {
+        if line.is_empty() {
+            out.push('\n');
+            continue;
+        }
+        let stripped: &str = if drop_outer && line.len() >= 4 {
+            &line[4..]
+        } else {
+            line
+        };
+        out.push_str(&body_indent);
+        out.push_str(stripped);
+        out.push('\n');
+    }
+    out.push_str(indent);
+    out.push('}');
+    out
 }
