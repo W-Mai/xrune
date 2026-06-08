@@ -86,9 +86,10 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
                     }
                     out.push(')');
                 }
-                out.push(' ');
-                let body = on.get_body();
-                out.push_str(&fmt_block(body, &child_indent));
+                if let Some(body) = on.get_body() {
+                    out.push(' ');
+                    out.push_str(&fmt_block(body, &child_indent));
+                }
             }
 
             // Children
@@ -294,9 +295,7 @@ fn fmt_block(block: &syn::Block, indent: &str) -> String {
     }
     let inner = formatted[open + 1..close].trim_matches('\n');
     let lines: Vec<&str> = inner.lines().map(|l| l.trim_end()).collect();
-    let drop_outer = lines
-        .iter()
-        .all(|l| l.is_empty() || l.starts_with("    "));
+    let drop_outer = lines.iter().all(|l| l.is_empty() || l.starts_with("    "));
 
     let body_indent = format!("{indent}    ");
     let mut out = String::from("{\n");

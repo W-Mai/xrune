@@ -7,7 +7,7 @@ pub struct DsOn {
     qualifier: Option<syn::Ident>,
     name: syn::Ident,
     args: Vec<syn::Expr>,
-    body: syn::Block,
+    body: Option<syn::Block>,
 }
 
 impl DsOn {
@@ -23,8 +23,8 @@ impl DsOn {
         &self.args
     }
 
-    pub fn get_body(&self) -> &syn::Block {
-        &self.body
+    pub fn get_body(&self) -> Option<&syn::Block> {
+        self.body.as_ref()
     }
 }
 
@@ -34,12 +34,8 @@ impl Debug for DsOn {
             Some(q) => format!("{}::{}", q, self.name),
             None => self.name.to_string(),
         };
-        write!(
-            f,
-            "On({prefix}, args={}, stmts={})",
-            self.args.len(),
-            self.body.stmts.len()
-        )
+        let stmts = self.body.as_ref().map_or(0, |b| b.stmts.len());
+        write!(f, "On({prefix}, args={}, stmts={stmts})", self.args.len())
     }
 }
 
@@ -74,7 +70,19 @@ impl Parse for DsOn {
             Vec::new()
         };
 
-        let body: syn::Block = input.parse()?;
+        let body = if input.peek(syn::token::Brace) {
+            Some(input.parse::<syn::Block>()?)
+        } else {
+            None
+        };
+
+        if body.is_none() && args.is_empty() {
+            return Err(syn::Error::new(
+                name.span(),
+                "`on EventKind` must have either a body `{ ... }` or a callback argument \
+                 like `on EventKind(cb)`",
+            ));
+        }
 
         Ok(DsOn {
             qualifier,
