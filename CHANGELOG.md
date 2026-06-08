@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.2] - 2026-06-08
+
+### Added
+
+- **Callback-form `on EventKind`** — `on EventKind(args, cb)` with the trailing arg as a callable expression and no `{ ... }` body is now valid. Combinations: `on Tap(cb)` (bare callback), `on Tap(2, cb)` (count=2 callback). Body-form and callback-form coexist on the same widget.
+- **`DsOn.body` is `Option<syn::Block>`** — `get_body()` returns `Option<&syn::Block>`. Hosts that consume `DsOn` decide what the trailing arg means when body is `None`.
+
+### Fixed
+
+- **`xrune-fmt` pretty-prints `on EventKind { ... }` body** — the body of an `on` clause used to come out as a single line with token-stream spacing (`a . b ( ) ;`). Now it runs through `prettyplease` and re-indents each statement under the call-site indent, matching how the rest of the file reads.
+
+### Breaking
+
+- `DsOn::get_body()` signature changes from `&syn::Block` to `Option<&syn::Block>`. Direct consumers must match on the option.
+
 ## [1.5.1] - 2026-06-07
 
 `on EventKind` syntax now attaches handlers to widgets unambiguously. The
