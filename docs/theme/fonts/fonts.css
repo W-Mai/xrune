@@ -3,21 +3,21 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("cardo-regular.woff2") format("woff2");
+  src: url('{{ resource "fonts/cardo-regular.woff2" }}') format("woff2");
 }
 @font-face {
   font-family: "Cardo";
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url("cardo-italic.woff2") format("woff2");
+  src: url('{{ resource "fonts/cardo-italic.woff2" }}') format("woff2");
 }
 @font-face {
   font-family: "Cardo";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("cardo-bold.woff2") format("woff2");
+  src: url('{{ resource "fonts/cardo-bold.woff2" }}') format("woff2");
 }
 
 @font-face {
@@ -25,14 +25,14 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("cinzeldecorative-regular.woff2") format("woff2");
+  src: url('{{ resource "fonts/cinzeldecorative-regular.woff2" }}') format("woff2");
 }
 @font-face {
   font-family: "Cinzel Decorative";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("cinzeldecorative-bold.woff2") format("woff2");
+  src: url('{{ resource "fonts/cinzeldecorative-bold.woff2" }}') format("woff2");
 }
 
 @font-face {
@@ -40,5 +40,5 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("jetbrains-mono-regular.woff2") format("woff2");
+  src: url('{{ resource "fonts/jetbrains-mono-regular.woff2" }}') format("woff2");
 }
