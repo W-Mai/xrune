@@ -33,13 +33,13 @@ hands every shred of semantics to the inscriber.
 
 ## Five volumes and a hub
 
-| Volume | Office |
-| --- | --- |
-| [`xrune`](https://crates.io/crates/xrune) | The opening scroll. The reader summons only this; it draws `xrune-nexus` and the `ui!` rite from beneath. |
-| [`xrune-nexus`](https://crates.io/crates/xrune-nexus) | The **hub**. AST nodes (`Ds*`), the `DsRune` covenant, the `decipher` walk — all kept here. |
-| [`xrune-incant`](https://crates.io/crates/xrune-incant) | The **speaking-stone**. The proc-macro that *is* `ui! { … }`. |
-| [`xrune-sigil`](https://crates.io/crates/xrune-sigil) | The **sigil-forge**. The `DsRef` derive macro that mints `Rc<RefCell<>>` reference-sigils for the AST. |
-| [`xrune-fmt`](https://crates.io/crates/xrune-fmt) | The **scribe**. A CLI that puts every `ui! { … }` block through the real parser and writes it back, faithful in shape. |
+| Volume | Suffix | Office |
+| --- | --- | --- |
+| [`xrune`](https://crates.io/crates/xrune) | — | The opening scroll. The reader summons only this; it draws `xrune-nexus` and the `ui!` rite from beneath. |
+| [`xrune-nexus`](https://crates.io/crates/xrune-nexus) | **nexus** | The **hub**. AST nodes (`Ds*`), the `DsRune` covenant, the `decipher` walk — all kept here. |
+| [`xrune-incant`](https://crates.io/crates/xrune-incant) | **incant** | The **speaking-stone**. The proc-macro that *is* `ui! { … }`. |
+| [`xrune-sigil`](https://crates.io/crates/xrune-sigil) | **sigil** | The **sigil-forge**. The `DsRef` derive macro that mints `Rc<RefCell<>>` reference-sigils for the AST. |
+| [`xrune-fmt`](https://crates.io/crates/xrune-fmt) | **fmt** | The **scribe**. A CLI that puts every `ui! { … }` block through the real parser and writes it back, faithful in shape. |
 
 All five volumes share one cargo workspace and one moving version: every
 release advances all five together to the same `X.Y.Z`.
