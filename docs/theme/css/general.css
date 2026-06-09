@@ -502,6 +502,8 @@ dd > p {
     letter-spacing: 0.18em;
     color: var(--gold);
     font-size: 1.05em;
+    line-height: var(--menu-bar-height);
+    margin: 0;
 }
 
 .tome :not(pre) > code {
