@@ -128,7 +128,7 @@ on Tap {
 # fn main() {}
 ```
 
-…or a trailing callback expression with no body (1.5.2):
+…or a trailing callback expression with no body:
 
 ```rust
 # use xrune::ui;

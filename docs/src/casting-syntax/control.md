@@ -124,5 +124,5 @@ All four control nodes require a brace body. Bodiless `if`, `walk`,
 
 - `if` → [`ds_if.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/ds_node/ds_if.rs)
 - `walk … with …` → [`ds_iter.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/ds_node/ds_iter.rs)
-- `@niche` → [`ds_niche.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/ds_node/ds_niche.rs) (added 1.4.0)
-- `match` → [`ds_match.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/ds_node/ds_match.rs) (added 1.4.0)
+- `@niche` → [`ds_niche.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/ds_node/ds_niche.rs)
+- `match` → [`ds_match.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/ds_node/ds_match.rs)

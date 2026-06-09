@@ -92,5 +92,5 @@ A debug rune simply prints them. xrune-fmt re-emits them verbatim.
 ## Source-of-truth
 
 The parsing branch lives in `DsWidget::parse` ([`ds_widget.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/ds_node/ds_widget.rs)).
-Introduced in 1.2.0; `inscribe_widget` gained the `enchants: &[syn::Expr]`
-slice in the same release.
+`inscribe_widget` carries an `enchants: &[syn::Expr]` slice for the rune
+to consume.

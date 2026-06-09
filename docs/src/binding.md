@@ -168,5 +168,5 @@ That's it — that's the whole hosting contract.
 - Compare `DefaultRune` with the formatter in
   [The Scribe](scribe.md) — both walk the same tree shape, but only
   one implements `DsRune`. The contrast is informative.
-- Read [The Codex of Changes](codex.md) for which trait methods landed in
-  which release — the trait grew across 1.1.0 → 1.5.1.
+- Read [The Codex of Changes](codex.md) for the cross-version drift of
+  the trait surface.
