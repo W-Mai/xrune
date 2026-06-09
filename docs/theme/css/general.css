@@ -491,6 +491,10 @@ dd > p {
     border-bottom-color: var(--gold-bright);
 }
 
+.tome .icon-button {
+    font: inherit;
+}
+
 .tome .menu-title {
     font-family: "Cinzel Decorative", "Cardo", serif;
     font-weight: 700;
