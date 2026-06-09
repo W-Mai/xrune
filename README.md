@@ -24,8 +24,11 @@ use xrune::ui;
 
 fn app(parent: i32) {
     ui! {
-        // Context area: arbitrary key-value pairs
-        :(parent: parent  world: &mut world:)
+        // Context area: arbitrary key-value pairs (each attr on its own line)
+        :(
+            parent: parent
+            world: &mut world
+        :)
 
         // Widget with attributes
         container (width: 480, height: 320, color: "dark") {
@@ -127,7 +130,7 @@ impl DsRune for MyRune {
 
 ## Context Area
 
-The `:(key: value  key: value:)` block passes arbitrary context to the Rune implementation. The `parent` key is required; all others are optional and Rune-specific.
+The `:( … :)` block passes arbitrary context to the Rune implementation. Each attribute sits on its own line. The `parent` key is required; all others are optional and Rune-specific.
 
 ```rust
 ui! {
