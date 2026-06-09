@@ -1,0 +1,13 @@
+[workspace]
+
+[package]
+name = "xrune-doctests"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+xrune = { path = "../../crates/xrune" }

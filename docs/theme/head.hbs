@@ -1,0 +1,246 @@
+<!--
+  OG / Twitter Card meta. mdbook itself doesn't emit these, so link
+  previews on Slack / Discord / iMessage / 微信 fall back to the favicon
+  (a 32×32 ICO that renders as an illegible square in the 1200×628 slot).
+
+  og:image points at the hero card under src/assets/. {{ chapter_title }}
+  comes from mdbook's handlebars context and gives every page a distinct title.
+-->
+<meta property="og:title" content="{{ chapter_title }} · xrune">
+<meta property="og:description" content="xrune — a declarative UI DSL proc-macro framework with pluggable code-generation backends.">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://xrune.to01.icu/assets/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+<meta property="og:image:alt" content="xrune · The Grimoire">
+<meta property="og:site_name" content="xrune documentation">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ chapter_title }} · xrune">
+<meta name="twitter:description" content="xrune — a declarative UI DSL proc-macro framework with pluggable code-generation backends.">
+<meta name="twitter:image" content="https://xrune.to01.icu/assets/og-card.png">
+
+<!--
+  Language switcher for the two-tree mdbook layout.
+
+  Convention:
+    English book is at:  /<path>
+    zh-CN book is at:    /zh-CN/<path>
+
+  Entries that 404 on the alternate tree are marked `unavailable` and
+  rendered as a disabled item, so the menu always shows every language we
+  publish — important during translation rollout when zh-CN lags behind EN.
+-->
+<style>
+  .lang-switcher { position: relative; display: inline-block; }
+  .lang-switcher > a { cursor: pointer; }
+  .lang-switcher ul {
+    position: absolute; right: 0; top: 2rem; z-index: 1000;
+    background: var(--bg); border: 1px solid var(--theme-popup-border, #ccc);
+    border-radius: 4px; padding: .25rem 0; margin: 0;
+    list-style: none; min-width: 9rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    display: none;
+  }
+  .lang-switcher.open ul { display: block; }
+  .lang-switcher li a {
+    display: block; padding: .35rem .9rem;
+    color: var(--fg); text-decoration: none;
+    white-space: nowrap;
+  }
+  .lang-switcher li a:hover { background: var(--theme-hover, #eee); }
+  .lang-switcher li.current a { font-weight: 600; }
+  .lang-switcher li.unavailable a { opacity: .45; cursor: not-allowed; pointer-events: none; }
+</style>
+<script>
+(function() {
+  var pagePath = "{{ path }}";
+  var pathToRoot = "{{ path_to_root }}";
+
+  var langs = [
+    { id: "",      label: "English"  },
+    { id: "zh-CN", label: "简体中文" },
+  ];
+
+  var here = window.location.pathname;
+  var current = "";
+  for (var i = 0; i < langs.length; i++) {
+    if (langs[i].id && here.indexOf("/" + langs[i].id + "/") !== -1) {
+      current = langs[i].id; break;
+    }
+  }
+
+  // Toolbar print/github/edit icons render as `<i class="fa fa-*">` glyphs
+  // from the bundled FontAwesome 4 webfont. Use the same shape so the
+  // switcher inherits color/size/hover from the toolbar.
+  var GLOBE_ICON = '<i class="fa fa-globe" id="lang-button"></i>';
+
+  document.addEventListener("DOMContentLoaded", function() {
+    var rb = document.querySelector(".right-buttons");
+    if (!rb) return;
+
+    var wrap = document.createElement("div");
+    wrap.className = "lang-switcher";
+    var btn = document.createElement("a");
+    btn.setAttribute("role", "button");
+    btn.setAttribute("aria-label", "Switch language");
+    btn.title = "Switch language";
+    btn.innerHTML = GLOBE_ICON;
+    var ul = document.createElement("ul");
+
+    var pageHtml = pagePath.replace(/\.md$/, ".html");
+
+    langs.forEach(function(lang) {
+      var li = document.createElement("li");
+      if (lang.id === current) li.className = "current";
+      var a = document.createElement("a");
+      var bookRoot;
+      if (current === "") {
+        bookRoot = pathToRoot;
+      } else {
+        bookRoot = pathToRoot + "../";
+      }
+      var url = bookRoot + (lang.id ? lang.id + "/" : "") + pageHtml;
+      a.href = url;
+      a.textContent = lang.label;
+      li.appendChild(a);
+      ul.appendChild(li);
+
+      // HEAD-probe; on 404 mark unavailable rather than hide. Keeps the menu
+      // predictable when a translation is partial, or when `mdbook serve`
+      // only renders one tree at a time.
+      if (lang.id !== current) {
+        fetch(url, { method: "HEAD" }).then(function(resp) {
+          if (!resp.ok) li.className = "unavailable";
+        }).catch(function() { li.className = "unavailable"; });
+      }
+    });
+
+    wrap.appendChild(btn);
+    wrap.appendChild(ul);
+    rb.insertBefore(wrap, rb.firstChild);
+
+    btn.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      wrap.classList.toggle("open");
+    });
+    document.addEventListener("click", function() {
+      wrap.classList.remove("open");
+    });
+  });
+})();
+</script>
+
+<!--
+  Pagefind search overlay.
+
+  mdbook's bundled elasticlunr drops non-ASCII tokens, so the zh-CN tree has
+  no working search out of the box. book.toml disables the built-in search
+  (`[output.html.search] enable = false`); Pagefind 1.4 indexes both trees
+  in CI and gets injected here.
+
+  bundlePath is computed from path_to_root so each tree loads its own index
+  (/pagefind/ for English, /zh-CN/pagefind/ for Chinese).
+-->
+<link rel="stylesheet" href="{{ path_to_root }}pagefind/pagefind-ui.css" onerror="this.remove()">
+<style>
+  #xrune-search-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.45);
+    display: none;
+    align-items: flex-start; justify-content: center;
+    padding-top: 6rem;
+  }
+  #xrune-search-overlay.open { display: flex; }
+  #xrune-search-modal {
+    width: min(720px, 92vw);
+    background: var(--bg); color: var(--fg);
+    border: 1px solid var(--theme-popup-border, #ccc);
+    border-radius: 8px; padding: 1rem 1.25rem 1.25rem;
+    box-shadow: 0 12px 32px rgba(0,0,0,.25);
+    max-height: 80vh; overflow: auto;
+  }
+  #xrune-search-modal .pagefind-ui__form { margin-top: 0; }
+</style>
+<div id="xrune-search-overlay" role="dialog" aria-modal="true" aria-label="Search documentation">
+  <div id="xrune-search-modal">
+    <div id="xrune-search"></div>
+  </div>
+</div>
+<script src="{{ path_to_root }}pagefind/pagefind-ui.js" onerror="this.remove()"></script>
+<script>
+(function() {
+  // Lazy init — Pagefind UI only spins up on first open, so pages that
+  // never invoke search don't pay for the index fetch.
+  var initialised = false;
+  function ensureInit() {
+    if (initialised) return true;
+    if (typeof PagefindUI === "undefined") return false;
+    new PagefindUI({
+      element: "#xrune-search",
+      showSubResults: true,
+      autofocus: true,
+      translations: { placeholder: "Search the grimoire…" },
+    });
+    initialised = true;
+    return true;
+  }
+
+  function openOverlay() {
+    var overlay = document.getElementById("xrune-search-overlay");
+    if (!overlay) return;
+    if (!ensureInit()) return;
+    overlay.classList.add("open");
+    var input = overlay.querySelector("input[type='text']");
+    if (input) input.focus();
+  }
+
+  function closeOverlay() {
+    var overlay = document.getElementById("xrune-search-overlay");
+    if (overlay) overlay.classList.remove("open");
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    var overlay = document.getElementById("xrune-search-overlay");
+    if (!overlay) return;
+
+    overlay.addEventListener("click", function(e) {
+      if (e.target === overlay) closeOverlay();
+    });
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape" && overlay.classList.contains("open")) {
+        closeOverlay();
+        e.preventDefault();
+        return;
+      }
+      var t = e.target;
+      var typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" ||
+                         (t.isContentEditable === true));
+      if (typing) return;
+      if (e.key === "s" || e.key === "/") {
+        openOverlay();
+        e.preventDefault();
+      }
+    });
+
+    // Built-in search-toggle is removed when [output.html.search] enable = false,
+    // so inject a replacement so users have a click entry point besides s / /.
+    var rb = document.querySelector(".right-buttons");
+    if (rb) {
+      var btn = document.createElement("a");
+      btn.id = "xrune-search-toggle";
+      btn.setAttribute("role", "button");
+      btn.setAttribute("aria-label", "Search documentation");
+      btn.title = "Search the grimoire (s or /)";
+      btn.style.cursor = "pointer";
+      btn.innerHTML = '<i class="fa fa-search"></i>';
+      btn.addEventListener("click", function(e) {
+        e.preventDefault();
+        openOverlay();
+      });
+      rb.insertBefore(btn, rb.firstChild);
+    }
+  });
+})();
+</script>

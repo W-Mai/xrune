@@ -1,0 +1,19 @@
+[book]
+title = "xrune · The Grimoire"
+authors = ["W-Mai"]
+language = "en"
+src = "src"
+
+[output.html]
+default-theme = "tome"
+preferred-dark-theme = "tome"
+git-repository-url = "https://github.com/W-Mai/xrune"
+edit-url-template = "https://github.com/W-Mai/xrune/edit/main/docs/{path}"
+additional-js = ["theme/mermaid.min.js", "theme/mermaid-init.js"]
+
+# elasticlunr drops CJK; head.hbs injects Pagefind.
+[output.html.search]
+enable = false
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"

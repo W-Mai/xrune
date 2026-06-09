@@ -1,0 +1,66 @@
+name: Deploy docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install mdbook
+        uses: taiki-e/cache-cargo-install-action@v2
+        with: { tool: mdbook }
+      - name: Install mdbook-mermaid
+        uses: taiki-e/cache-cargo-install-action@v2
+        with: { tool: mdbook-mermaid }
+
+      - name: Build EN tree
+        run: mdbook build docs -d "$GITHUB_WORKSPACE/pages"
+
+      - name: Build zh-CN tree
+        env:
+          MDBOOK_BOOK__SRC: src-zh-CN
+          MDBOOK_BOOK__LANGUAGE: zh-CN
+          MDBOOK_OUTPUT__HTML__SITE_URL: /zh-CN/
+        run: mdbook build docs -d "$GITHUB_WORKSPACE/pages/zh-CN"
+
+      - name: Install Pagefind
+        run: |
+          curl -fsSL https://github.com/CloudCannon/pagefind/releases/download/v1.4.0/pagefind-v1.4.0-x86_64-unknown-linux-musl.tar.gz \
+            | tar -xz -C /usr/local/bin
+      - run: pagefind --site pages
+      - run: pagefind --site pages/zh-CN
+
+      - run: touch pages/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
