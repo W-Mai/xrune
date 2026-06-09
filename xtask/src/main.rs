@@ -17,12 +17,13 @@ fn run() -> Result {
         "build" => cmd_build(),
         "test" => cmd_test(),
         "lint" => cmd_lint(),
+        "doctest" => cmd_doctest(),
         "bump" => cmd_bump(args.get(1).map(|s| s.as_str()).unwrap_or("")),
         "publish" => cmd_publish(args.iter().any(|a| a == "--dry-run")),
         "release" => cmd_release(),
         _ => {
             eprintln!(
-                "usage: cargo xtask <ci|build|test|lint|bump <major|minor|patch>|publish [--dry-run]|release>"
+                "usage: cargo xtask <ci|build|test|lint|doctest|bump <major|minor|patch>|publish [--dry-run]|release>"
             );
             std::process::exit(1);
         }
@@ -34,11 +35,26 @@ fn cmd_ci() -> Result {
         ("build", cmd_build as fn() -> Result),
         ("test", cmd_test),
         ("lint", cmd_lint),
+        ("doctest", cmd_doctest),
     ] {
         println!("\n=== xtask: {name} ===");
         step()?;
     }
     println!("\n✅ All CI checks passed.");
+    Ok(())
+}
+
+fn cmd_doctest() -> Result {
+    let root = project_root();
+    let docs_test = format!("{root}/docs/test");
+
+    run_cmd_in("python3", &["extract.py"], &docs_test)?;
+    run_cmd_in(
+        "cargo",
+        &["build", "--tests", "--manifest-path", "Cargo.toml"],
+        &docs_test,
+    )?;
+    println!("  ✅ all doc code blocks compiled");
     Ok(())
 }
 
@@ -246,10 +262,14 @@ fn cargo_capture(args: &[&str]) -> Result {
 }
 
 fn run_cmd(cmd: &str, args: &[&str]) -> Result {
+    run_cmd_in(cmd, args, &project_root())
+}
+
+fn run_cmd_in(cmd: &str, args: &[&str], cwd: &str) -> Result {
     println!("  → {cmd} {}", args.join(" "));
     let status = Command::new(cmd)
         .args(args)
-        .current_dir(project_root())
+        .current_dir(cwd)
         .status()
         .map_err(|e| format!("failed to run {cmd}: {e}"))?;
     if status.success() {
