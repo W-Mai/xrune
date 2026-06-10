@@ -64,54 +64,25 @@
   <div class="r-motes" aria-hidden="true"></div>
   <div class="container r-inner">
     <h2>Watch a Casting Compile</h2>
-    <p class="r-sub">One incantation, read glyph by glyph, inscribed into code — at compile time.</p>
+    <p class="r-sub">One incantation, traced through every form it takes — source, tree, trait calls, code.</p>
 
     <div class="r-rail" aria-hidden="true">
-      <span class="r-stage" data-stage="0">ui! { … }</span>
+      <span class="r-stage" data-stage="A">DSL → DsTree</span>
       <span class="r-arrow">→</span>
-      <span class="r-stage" data-stage="1">TokenStream</span>
+      <span class="r-stage" data-stage="B">DsTree → DsRune</span>
       <span class="r-arrow">→</span>
-      <span class="r-stage" data-stage="2">DsRoot</span>
+      <span class="r-stage" data-stage="C">DsRune → code</span>
       <span class="r-arrow">→</span>
-      <span class="r-stage" data-stage="3">DsTree</span>
-      <span class="r-arrow">→</span>
-      <span class="r-stage" data-stage="4">decipher</span>
-      <span class="r-arrow">→</span>
-      <span class="r-stage" data-stage="5">DsRune</span>
-      <span class="r-arrow">→</span>
-      <span class="r-stage" data-stage="6">seal → TokenStream</span>
+      <span class="r-stage" data-stage="seal">seal</span>
     </div>
 
-    <div class="r-stage-wrap">
-      <div class="r-panel r-cast" id="rCast">
-        <p class="r-panel-title"><span class="dot"></span>The Casting</p>
-        <pre><code id="rCastCode"></code></pre>
-      </div>
-
+    <div class="r-relay" id="rRelay">
+      <div class="r-slot" data-slot="left" id="rSlotL"></div>
       <div class="r-conduit" aria-hidden="true">
         <div class="wire"></div>
         <div class="r-walker">decipher ↻</div>
       </div>
-
-      <div class="r-panel r-right" id="rRight">
-        <div class="r-view" id="rRootView">
-          <p class="r-view-title">parse → DsRoot</p>
-          <div class="r-struct"><span class="brace">DsRoot {</span><br>
-&nbsp;&nbsp;<span class="field">context_attrs</span>: [ parent: parent ],<br>
-&nbsp;&nbsp;<span class="field">content</span>: <span class="ty">DsTreeRef</span><br>
-<span class="brace">}</span></div>
-        </div>
-
-        <div class="r-view" id="rTreeView">
-          <p class="r-view-title">DsTree · 6 node kinds</p>
-          <div class="r-tree"></div>
-        </div>
-
-        <div class="r-view r-trace" id="rTraceView">
-          <p class="r-view-title">DsRune inscribes · DefaultRune</p>
-          <pre><code id="rTraceCode"></code></pre>
-        </div>
-      </div>
+      <div class="r-slot" data-slot="right" id="rSlotR"></div>
     </div>
 
     <div class="r-seal" id="rSeal">
