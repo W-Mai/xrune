@@ -41,22 +41,27 @@
       <a class="btn secondary" href="https://crates.io/crates/xrune">crates.io</a>
     </div>
   </div>
+  <div class="scroll-cue" aria-hidden="true">scroll</div>
 </header>
 
 <section class="pitch">
-  <div class="container">
-    <h2>What it is</h2>
-    <p>
-      <code>xrune</code> is a Rust proc-macro framework. You write a casting in
-      its declarative DSL, and a <em>runesmith</em> you bind (an
-      implementation of the seven-method <code>DsRune</code> trait) inscribes
-      it into whatever code your host actually needs &mdash; ECS spawn calls,
-      a render-tree builder, a debug echo, a formatter round-trip.
-    </p>
-    <p>
-      The DSL parses; the runesmith decides what the parse becomes. Same
-      casting, many translations.
-    </p>
+  <div class="container zigzag">
+    <div class="zz-head">
+      <h2>What it is</h2>
+    </div>
+    <div class="zz-body">
+      <p>
+        <code>xrune</code> is a Rust proc-macro framework. You write a casting in
+        its declarative DSL, and a <em>runesmith</em> you bind (an
+        implementation of the seven-method <code>DsRune</code> trait) inscribes
+        it into whatever code your host actually needs &mdash; ECS spawn calls,
+        a render-tree builder, a debug echo, a formatter round-trip.
+      </p>
+      <p>
+        The DSL parses; the runesmith decides what the parse becomes. Same
+        casting, many translations.
+      </p>
+    </div>
   </div>
 </section>
 

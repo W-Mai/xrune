@@ -48,6 +48,11 @@
 
 * { box-sizing: border-box; }
 
+html {
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -59,6 +64,9 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.hero, section { scroll-snap-align: start; scroll-snap-stop: normal; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
 a {
   color: var(--gold);
@@ -95,13 +103,28 @@ a code { border-color: var(--gold); }
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 96px 24px 64px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
   text-align: center;
   background:
     radial-gradient(ellipse at top, rgba(197, 162, 83, 0.12), transparent 60%),
     var(--bg);
   border-bottom: 1px solid var(--shadow);
 }
+.hero .scroll-cue {
+  position: absolute;
+  bottom: 28px; left: 50%; transform: translateX(-50%);
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--muted);
+  animation: hero-cue 2.2s ease-in-out infinite;
+}
+.hero .scroll-cue::after { content: ""; display: block; width: 1px; height: 26px; margin: 8px auto 0; background: linear-gradient(var(--gold), transparent); }
+@keyframes hero-cue { 0%,100% { opacity: .4; transform: translate(-50%, 0); } 50% { opacity: .9; transform: translate(-50%, 5px); } }
 
 .hero-bg {
   position: absolute;
@@ -126,31 +149,31 @@ a code { border-color: var(--gold); }
 .brand {
   font-family: "Cinzel Decorative", "Cardo", serif;
   font-weight: 700;
-  font-size: clamp(56px, 11vw, 120px);
+  font-size: clamp(72px, 15vw, 184px);
   letter-spacing: 0.18em;
   margin: 0;
   color: var(--gold);
   line-height: 1;
-  text-shadow: 0 0 28px rgba(224, 191, 109, 0.18);
+  text-shadow: 0 0 40px rgba(224, 191, 109, 0.22);
 }
 
 .subtitle {
   font-family: "Cinzel Decorative", "Cardo", serif;
-  font-size: clamp(20px, 3.4vw, 28px);
-  letter-spacing: 0.12em;
+  font-size: clamp(22px, 4vw, 36px);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--gold-bright);
-  margin: 8px 0 28px;
+  margin: 12px 0 36px;
 }
 
 .tagline {
-  font-size: clamp(18px, 2.6vw, 22px);
-  margin: 0 0 4px;
+  font-size: clamp(19px, 2.8vw, 25px);
+  margin: 0 0 6px;
   color: var(--fg);
 }
 .tagline-zh {
-  font-size: clamp(15px, 2.2vw, 18px);
-  margin: 0 0 36px;
+  font-size: clamp(16px, 2.4vw, 20px);
+  margin: 0 0 44px;
   color: var(--muted);
   font-style: italic;
 }
@@ -207,8 +230,21 @@ a code { border-color: var(--gold); }
 
 /* sections */
 section {
-  padding: 64px 24px;
+  padding: 88px 24px;
   border-bottom: 1px solid var(--shadow);
+}
+.ritual { min-height: 100vh; padding-top: 64px; padding-bottom: 48px; }
+
+.zigzag {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 48px;
+  align-items: center;
+}
+.zigzag .zz-head h2 { margin: 0; border-bottom: none; padding-bottom: 0; }
+.zigzag .zz-body p:last-child { margin-bottom: 0; }
+@media (max-width: 720px) {
+  .zigzag { grid-template-columns: 1fr; gap: 20px; }
 }
 
 h2 {
@@ -281,7 +317,6 @@ footer {
 footer a { border-bottom-style: dotted; }
 
 @media (max-width: 540px) {
-  .hero { padding-top: 64px; padding-bottom: 48px; }
   .cta { flex-direction: column; gap: 10px; }
   .btn { width: 100%; }
   .volumes td:nth-child(2) { font-size: 13px; }

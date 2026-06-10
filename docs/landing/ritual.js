@@ -244,7 +244,7 @@
     return;
   }
 
-  var idx = 0, clock = null;
+  var idx = 0, clock = null, started = false;
   function dwellOf(i) { return steps[i] && steps[i].stage === 'seal' ? 3000 : 520; }
   function tick() {
     applyStep(idx);
@@ -252,7 +252,24 @@
     idx = (idx + 1) % steps.length;
     clock = setTimeout(tick, dwell);
   }
-  function start() { if (clock) return; tick(); }
+  function start() { if (started) return; started = true; tick(); }
+  function jumpToStep(i) {
+    if (clock) { clearTimeout(clock); clock = null; }
+    started = true;
+    idx = i;
+    tick();
+  }
+
+  var firstStepOfStage = {};
+  steps.forEach(function (s, i) { var k = s.stage; if (firstStepOfStage[k] === undefined) firstStepOfStage[k] = i; });
+  stages.forEach(function (s) {
+    s.style.cursor = 'pointer';
+    s.setAttribute('role', 'button');
+    s.addEventListener('click', function () {
+      var k = s.getAttribute('data-stage');
+      if (firstStepOfStage[k] !== undefined) jumpToStep(firstStepOfStage[k]);
+    });
+  });
 
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { start(); io.disconnect(); } }); }, { threshold: .2 });

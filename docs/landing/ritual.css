@@ -1,4 +1,4 @@
-.ritual { position: relative; overflow: hidden; }
+.ritual { position: relative; overflow: hidden; display: block; }
 .ritual .r-inner { max-width: 920px; margin: 0 auto; position: relative; z-index: 1; }
 .ritual .r-sub { color: var(--muted); font-style: italic; margin: 0 0 28px; font-size: clamp(15px, 2.2vw, 17px); }
 
