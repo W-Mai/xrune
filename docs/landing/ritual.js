@@ -2,8 +2,7 @@
   var root = document.getElementById('ritual');
   if (!root) return;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var slotL = document.getElementById('rSlotL');
-  var slotR = document.getElementById('rSlotR');
+  var belt = document.getElementById('rBelt');
   var seal = document.getElementById('rSeal');
   var stages = Array.prototype.slice.call(root.querySelectorAll('.r-stage'));
   var arrows = Array.prototype.slice.call(root.querySelectorAll('.r-arrow'));
@@ -17,10 +16,11 @@
     { e: null, toks: [['', '    '], ['p', ':(']] },
     { e: 'parent', toks: [['', '        '], ['', 'parent: parent']] },
     { e: null, toks: [['', '    '], ['p', ':)']] },
-    { e: null, toks: [] },
     { e: 'div', toks: [['', '    '], ['n', 'div'], ['', ' '], ['p', '('], ['', 'width: '], ['num', '100'], ['', ', height: '], ['num', '100+A'], ['', ', color: '], ['s', '"red"'], ['p', ')'], ['', ' '], ['p', '{']] },
     { e: 'text', toks: [['', '        '], ['n', 'text'], ['', ' '], ['p', '('], ['', 'content: '], ['s', '"hello world"'], ['p', ')']] },
-    { e: 'button', toks: [['', '        '], ['n', 'button'], ['', ' '], ['p', '('], ['', 'text: '], ['s', '"Save"'], ['p', ')'], ['', ' '], ['ench', '[Velocity{..}, Tracked]'], ['', ' '], ['k', 'on'], ['', ' Tap '], ['p', '{'], ['', ' save() '], ['p', '} {}']] },
+    { e: 'button', toks: [['', '        '], ['n', 'button'], ['', ' '], ['p', '('], ['', 'text: '], ['s', '"Save"'], ['p', ')']] },
+    { e: 'button', toks: [['', '            '], ['ench', '[Velocity{..}, Tracked]']] },
+    { e: 'button', toks: [['', '            '], ['k', 'on'], ['', ' Tap '], ['p', '{'], ['', ' save() '], ['p', '} {}']] },
     { e: 'walk', toks: [['', '        '], ['k', 'walk'], ['', ' range('], ['num', '20'], ['', ') '], ['k', 'with'], ['', ' i '], ['p', '{']] },
     { e: 'walkbtn', toks: [['', '            '], ['n', 'button'], ['', ' '], ['p', '('], ['', 'text: '], ['num', '6'], ['p', ')'], ['', ' '], ['p', '{}']] },
     { e: null, toks: [['', '        '], ['p', '}']] },
@@ -143,6 +143,8 @@
   }
 
   var P = { source: buildSource(), tree: buildTree(), calls: buildCalls(), trace: buildTrace() };
+  var REP = ['source', 'tree', 'calls', 'trace'];
+  REP.forEach(function (name) { P[name].root.classList.add('r-belt-panel', 'pos-wait'); belt.appendChild(P[name].root); });
   var MARKS = ['reading', 'visiting', 'firing', 'emit'];
   function clearPanel(p) {
     Object.keys(p.by).forEach(function (k) { p.by[k].forEach(function (n) { MARKS.forEach(function (m) { n.classList.remove(m); }); }); });
@@ -164,14 +166,14 @@
   ['A', 'B', 'C'].forEach(function (st) { order.forEach(function (e, ei) { steps.push({ stage: st, entity: e, eidx: ei }); }); });
   steps.push({ stage: 'seal' });
 
-  var mounted = { left: null, right: null };
-  function mount(slot, name) {
-    var slotEl = slot === 'left' ? slotL : slotR;
-    if (mounted[slot] === name) return;
-    slotEl.innerHTML = ''; slotEl.appendChild(P[name].root);
-    slotEl.classList.add('swap-in');
-    mounted[slot] = name;
-    requestAnimationFrame(function () { requestAnimationFrame(function () { slotEl.classList.remove('swap-in'); }); });
+  var POS = ['pos-out', 'pos-big', 'pos-small', 'pos-wait', 'pos-center'];
+  function placeBelt(bigName) {
+    var bi = REP.indexOf(bigName);
+    REP.forEach(function (name, i) {
+      var pos = i < bi ? 'pos-out' : i === bi ? 'pos-big' : i === bi + 1 ? 'pos-small' : 'pos-wait';
+      var pe = P[name].root;
+      POS.forEach(function (c) { pe.classList.toggle(c, c === pos); });
+    });
   }
 
   function setRail(idx, sealed) {
@@ -185,24 +187,42 @@
 
   function clearAll() { Object.keys(P).forEach(function (k) { clearPanel(P[k]); }); }
 
+  function syncBeltHeight() {
+    requestAnimationFrame(function () {
+      var h = 0;
+      ['.pos-big', '.pos-center', '.pos-small'].forEach(function (sel) {
+        var pe = belt.querySelector(sel); if (!pe) return;
+        var top = parseInt(getComputedStyle(pe).top, 10) || 0;
+        h = Math.max(h, pe.offsetHeight * (sel === '.pos-small' ? 0.84 : 1) + Math.max(top, 0));
+      });
+      if (h) belt.style.minHeight = (h + 24) + 'px';
+    });
+  }
+
   function applyStep(i) {
     var step = steps[i];
     clearAll();
     if (step.stage === 'seal') {
-      mount('left', 'calls'); mount('right', 'trace');
-      showAllPanel(P.calls); showAllPanel(P.trace);
+      var ALLPOS = ['pos-out', 'pos-big', 'pos-small', 'pos-wait', 'pos-center'];
+      REP.forEach(function (name) {
+        var pe = P[name].root;
+        ALLPOS.forEach(function (c) { pe.classList.toggle(c, name === 'trace' ? c === 'pos-center' : c === 'pos-out'); });
+      });
+      showAllPanel(P.trace);
       setRail(stages.length - 1, true); seal.classList.add('sealed');
+      syncBeltHeight();
       return;
     }
     seal.classList.remove('sealed');
     var cfg = STAGE[step.stage];
-    mount('left', cfg.left); mount('right', cfg.right);
+    placeBelt(cfg.left);
     setRail(cfg.rail, false);
     showAllPanel(P[cfg.left]);
     revealPanel(P[cfg.right], step.eidx);
     hiPanel(P[cfg.left], step.entity);
     hiPanel(P[cfg.right], step.entity);
     if (step.stage === 'B' && dropsAtB[step.entity]) sinkPanel(P[cfg.right], dropsAtB[step.entity]);
+    syncBeltHeight();
   }
 
   var layer = root.querySelector('.r-motes');
@@ -216,16 +236,23 @@
   }
 
   if (reduce) {
-    mount('left', 'calls'); mount('right', 'trace');
-    showAllPanel(P.calls); showAllPanel(P.trace);
-    order.forEach(function (e) { hiPanel(P.calls, e); hiPanel(P.trace, e); });
+    placeBelt('trace');
+    showAllPanel(P.trace);
+    order.forEach(function (e) { hiPanel(P.trace, e); });
     setRail(stages.length - 1, true); seal.classList.add('sealed');
+    syncBeltHeight();
     return;
   }
 
   var idx = 0, clock = null;
-  function tick() { applyStep(idx); idx = (idx + 1) % steps.length; }
-  function start() { if (clock) return; applyStep(0); idx = 1; clock = setInterval(tick, 900); }
+  function dwellOf(i) { return steps[i] && steps[i].stage === 'seal' ? 3000 : 520; }
+  function tick() {
+    applyStep(idx);
+    var dwell = dwellOf(idx);
+    idx = (idx + 1) % steps.length;
+    clock = setTimeout(tick, dwell);
+  }
+  function start() { if (clock) return; tick(); }
 
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { start(); io.disconnect(); } }); }, { threshold: .2 });

@@ -14,27 +14,30 @@
 .ritual .r-arrow { color: var(--shadow); font-size: 12px; transition: color .35s; }
 .ritual .r-arrow.lit { color: var(--gold); }
 
-/* relay: two slots, panels slide between them as the chain advances */
-.ritual .r-relay { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch; min-height: 440px; }
-.ritual .r-slot { position: relative; min-width: 0; }
-.ritual .r-slot .r-panel { height: 100%; }
-.ritual .r-slot.swap-in .r-panel { opacity: 0; transform: translateX(-14px); }
-
-.ritual .r-panel {
+.ritual .r-belt { position: relative; min-height: 320px; transition: min-height .4s cubic-bezier(.5,0,.25,1); }
+.ritual .r-belt-panel {
+  position: absolute; top: 0;
   background: var(--panel); border: 1px solid var(--shadow); padding: 18px 18px 20px;
-  position: relative; min-height: 400px;
   clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
-  transition: opacity .4s, transform .4s;
+  transition: left .45s cubic-bezier(.5,0,.25,1), top .45s cubic-bezier(.5,0,.25,1), width .45s cubic-bezier(.5,0,.25,1), opacity .35s, transform .45s cubic-bezier(.5,0,.25,1), filter .35s;
+  overflow: auto;
 }
+/* upcoming panels recede up-and-right (vanishing-line depth); negative top is intentional */
+.ritual .pos-big    { left: 2%;   top: 40px;  width: 62%; opacity: 1; transform: none; z-index: 3; box-shadow: 0 18px 46px rgba(0,0,0,.5); }
+.ritual .pos-small  { left: 52%;  top: 0;     width: 46%; opacity: .42; transform: scale(.84); transform-origin: top right; z-index: 1; filter: saturate(.6) brightness(.85); }
+.ritual .pos-out    { left: -68%; top: 60px;  width: 62%; opacity: 0; transform: scale(1.02); z-index: 0; pointer-events: none; }
+.ritual .pos-wait   { left: 86%;  top: -28px; width: 40%; opacity: 0; transform: scale(.7); transform-origin: top right; z-index: 0; pointer-events: none; }
+.ritual .pos-center { left: 14%;  top: 24px;  width: 72%; opacity: 1; transform: none; z-index: 3; box-shadow: 0 18px 46px rgba(0,0,0,.5); }
+.ritual .r-panel { background: var(--panel); border: 1px solid var(--shadow); padding: 18px; }
 .ritual .r-view-title {
   font-family: "Cinzel Decorative","Cardo",serif; font-size: 13px; letter-spacing: .1em;
   text-transform: uppercase; color: var(--gold); margin: 0 0 14px;
 }
 .ritual .r-view-body { font-family: "JetBrains Mono", Consolas, monospace; }
 
-.ritual pre { margin: 0; font-family: "JetBrains Mono", Consolas, monospace; font-size: 13px; line-height: 1.7; white-space: pre; overflow-x: auto; }
+.ritual pre { margin: 0; font-family: "JetBrains Mono", Consolas, monospace; font-size: 13px; line-height: 1.42; white-space: pre; overflow-x: auto; }
 .ritual pre code { background: none; border: 0; padding: 0; box-shadow: none; white-space: pre; color: inherit; font-size: inherit; }
-.ritual .r-line { display: block; position: relative; border-radius: 2px; padding: 0 6px; margin: 0 -6px; transition: background .3s, text-shadow .3s, padding-left .5s cubic-bezier(.5,0,.3,1), opacity .35s, transform .35s; }
+.ritual .r-line { display: block; position: relative; border-radius: 2px; padding: 0 6px; margin: 0 -6px; transition: background .25s, text-shadow .25s, padding-left .35s cubic-bezier(.5,0,.3,1), opacity .28s, transform .28s; }
 
 .ritual .r-node, .ritual .r-call { transition: border-color .3s, box-shadow .3s, background .3s, opacity .35s, transform .35s; }
 .ritual .r-pending { opacity: 0; transform: translateY(5px); pointer-events: none; }
@@ -86,17 +89,6 @@
   font-family: "JetBrains Mono", monospace;
 }
 
-/* conduit walker between slots */
-.ritual .r-conduit { position: relative; width: 60px; display: flex; align-items: center; justify-content: center; }
-.ritual .r-conduit .wire { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(--shadow); overflow: hidden; }
-.ritual .r-conduit .wire::after { content: ""; position: absolute; top: 0; left: -40%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, var(--gold-bright), transparent); animation: r-flow 2.4s linear infinite; }
-.ritual .r-walker {
-  font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--gold);
-  background: var(--panel-2); border: 1px solid var(--gold); border-radius: 2px;
-  padding: 4px 7px; letter-spacing: .05em; position: relative; z-index: 1;
-  box-shadow: 0 0 10px rgba(197,162,83,.3); white-space: nowrap;
-}
-
 /* seal */
 .ritual .r-seal { margin: 26px auto 0; text-align: center; }
 .ritual .r-seal .badge {
@@ -115,12 +107,11 @@
 @keyframes r-mote { 0% { opacity: 0; transform: translateY(20px) scale(.6); } 20% { opacity: .5; } 80% { opacity: .3; } 100% { opacity: 0; transform: translateY(-40px) scale(1); } }
 
 @media (max-width: 700px) {
-  .ritual .r-relay { grid-template-columns: 1fr; gap: 14px; min-height: 0; }
-  .ritual .r-conduit { width: auto; height: 44px; }
-  .ritual .r-conduit .wire { top: 0; bottom: 0; left: 50%; right: auto; width: 2px; height: 100%; }
-  .ritual .r-conduit .wire::after { left: 0; right: 0; top: -40%; width: 100%; height: 40%; background: linear-gradient(180deg, transparent, var(--gold-bright), transparent); animation: r-flow-v 2.4s linear infinite; }
-  .ritual .r-panel { min-height: 320px; }
-  @keyframes r-flow-v { 0% { top: -40%; } 100% { top: 100%; } }
+  .ritual .r-belt { min-height: 760px; }
+  .ritual .pos-big { left: 0; width: 100%; min-height: 420px; max-height: 720px; }
+  .ritual .pos-small { left: 8%; width: 84%; opacity: 0; transform: scale(.88); }
+  .ritual .pos-out { left: -100%; width: 100%; }
+  .ritual .pos-wait { left: 100%; width: 84%; }
 }
 @media (max-width: 480px) {
   .ritual pre, .ritual .r-tree, .ritual .r-calls { font-size: 12px; }
@@ -128,7 +119,7 @@
   .ritual .r-stage { font-size: 10px; padding: 4px 7px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ritual .r-panel, .ritual .r-slot.swap-in .r-panel { opacity: 1; transform: none; transition: none; }
-  .ritual .r-conduit .wire::after, .ritual .mote { animation: none; }
+  .ritual .r-belt-panel { transition: none; }
+  .ritual .mote { animation: none; }
   .ritual .r-seal .badge { opacity: 1; transform: none; }
 }
