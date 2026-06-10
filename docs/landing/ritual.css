@@ -1,0 +1,163 @@
+.ritual { position: relative; overflow: hidden; }
+.ritual .r-inner { max-width: 920px; margin: 0 auto; position: relative; z-index: 1; }
+.ritual .r-sub { color: var(--muted); font-style: italic; margin: 0 0 28px; font-size: clamp(15px, 2.2vw, 17px); }
+
+/* stage rail */
+.ritual .r-rail { display: flex; flex-wrap: wrap; gap: 8px 6px; align-items: center; justify-content: center; margin: 0 0 28px; }
+.ritual .r-stage {
+  font-family: "JetBrains Mono", Consolas, monospace; font-size: 11px; letter-spacing: .06em;
+  color: var(--muted); background: var(--panel-2); border: 1px solid var(--shadow);
+  padding: 5px 10px; border-radius: 2px; white-space: nowrap;
+  transition: color .35s, border-color .35s, background .35s, box-shadow .35s;
+}
+.ritual .r-stage.lit { color: var(--bg); background: var(--gold); border-color: var(--gold-bright); box-shadow: 0 0 12px rgba(197,162,83,.35); }
+.ritual .r-stage.done { color: var(--gold); background: var(--panel-2); border-color: var(--gold); box-shadow: none; }
+.ritual .r-arrow { color: var(--shadow); font-size: 12px; transition: color .35s; }
+.ritual .r-arrow.lit { color: var(--gold); }
+
+/* two-column stage */
+.ritual .r-stage-wrap { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch; min-height: 420px; }
+.ritual .r-panel {
+  background: var(--panel); border: 1px solid var(--shadow); padding: 18px 18px 20px;
+  position: relative; min-height: 380px;
+  /* clipped corners give the panels a sigil-plate feel rather than a plain rectangle */
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+.ritual .r-panel-title {
+  font-family: "Cinzel Decorative", "Cardo", serif; font-size: 13px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--gold); margin: 0 0 14px; display: flex; align-items: center; gap: 8px;
+}
+.ritual .r-panel-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--shadow); transition: background .3s, box-shadow .3s; }
+.ritual .r-panel.active .r-panel-title .dot { background: var(--gold-bright); box-shadow: 0 0 8px var(--gold-bright); }
+.ritual .r-panel.active { border-color: var(--gold); box-shadow: 0 0 22px rgba(197,162,83,.12) inset; }
+
+.ritual pre { margin: 0; font-family: "JetBrains Mono", Consolas, monospace; font-size: 13px; line-height: 1.7; white-space: pre; overflow-x: auto; }
+.ritual pre code { background: none; border: 0; padding: 0; box-shadow: none; white-space: pre; color: inherit; font-size: inherit; }
+.ritual .r-line { display: block; position: relative; border-radius: 2px; padding: 0 6px; margin: 0 -6px; transition: background .3s; }
+.ritual .r-cast .r-line.reading { background: rgba(197,162,83,.14); box-shadow: inset 2px 0 0 var(--gold); }
+
+/* syntax tint (shared by casting and generated trace) */
+.ritual .k { color: var(--rubric); }
+.ritual .n { color: var(--gold-bright); }
+.ritual .s { color: #9fb38a; }
+.ritual .p { color: var(--muted); }
+.ritual .num { color: #d8b86a; }
+.ritual .fn { color: #c9b070; }
+.ritual .kw { color: var(--rubric); }
+
+/* right panel swaps content per stage */
+.ritual .r-right { position: relative; }
+.ritual .r-view { position: absolute; inset: 18px; opacity: 0; transform: translateY(8px); transition: opacity .18s, transform .18s; pointer-events: none; }
+.ritual .r-view.show { opacity: 1; transform: none; pointer-events: auto; transition: opacity .45s .12s, transform .45s .12s; }
+.ritual .r-view-title { font-family: "Cinzel Decorative","Cardo",serif; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); margin: 0 0 14px; }
+
+/* DsRoot struct card */
+.ritual .r-struct { font-family: "JetBrains Mono", monospace; font-size: 13px; line-height: 1.9; }
+.ritual .r-struct .field { color: var(--muted); }
+.ritual .r-struct .ty { color: var(--gold-bright); }
+.ritual .r-struct .brace { color: var(--gold); }
+
+/* DsTree node graph */
+.ritual .r-tree { font-family: "JetBrains Mono", monospace; font-size: 12.5px; }
+.ritual .r-node {
+  display: inline-flex; align-items: center; gap: 8px; margin: 3px 0;
+  padding: 4px 10px; border: 1px solid var(--shadow); border-radius: 3px;
+  background: var(--panel-2); color: var(--fg);
+  opacity: 0; transform: translateX(-6px) scale(.97);
+  transition: opacity .4s, transform .4s, border-color .3s, box-shadow .3s, background .3s;
+}
+.ritual .r-node.grown { opacity: 1; transform: none; }
+.ritual .r-node.visiting { border-color: var(--gold-bright); background: rgba(197,162,83,.10); box-shadow: 0 0 14px rgba(224,191,109,.32); }
+.ritual .r-node .badge {
+  font-size: 10px; letter-spacing: .05em; padding: 1px 6px; border-radius: 2px;
+  background: var(--shadow); color: var(--gold-bright); text-transform: none;
+}
+.ritual .r-node.v-root .badge { background: #3a2a14; color: var(--gold-bright); }
+.ritual .r-node.v-widget .badge { background: #2a2410; color: var(--gold); }
+.ritual .r-node.v-iter .badge,
+.ritual .r-node.v-if .badge { background: #3a1f18; color: #e0a18d; }
+.ritual .r-node .lbl { color: var(--fg); }
+.ritual .r-tree .r-children { margin-left: 22px; border-left: 1px solid var(--shadow); padding-left: 14px; }
+
+/* conduit + walker (bounces between tree and trace) */
+.ritual .r-conduit { position: relative; width: 64px; display: flex; align-items: center; justify-content: center; }
+.ritual .r-conduit .wire { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(--shadow); overflow: hidden; }
+.ritual .r-conduit .wire::after {
+  content: ""; position: absolute; top: 0; left: -40%; width: 40%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  animation: r-flow 2.4s linear infinite;
+}
+.ritual .r-walker {
+  font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--gold);
+  background: var(--panel-2); border: 1px solid var(--gold); border-radius: 2px;
+  padding: 4px 7px; letter-spacing: .05em; position: relative; z-index: 1;
+  box-shadow: 0 0 10px rgba(197,162,83,.3); white-space: nowrap;
+  transition: transform .4s cubic-bezier(.5,0,.3,1.4);
+}
+.ritual .r-walker.bounce-r { transform: translateX(10px); }
+.ritual .r-walker.bounce-l { transform: translateX(-10px); }
+
+/* generated trace: reveal then animate indent into place */
+.ritual .r-trace .r-line { opacity: 0; transform: translateY(4px); transition: opacity .4s, transform .4s, text-shadow .4s, padding-left .55s cubic-bezier(.5,0,.3,1); }
+.ritual .r-trace .r-line.shown { opacity: 1; transform: none; }
+.ritual .r-trace .r-line.flash { text-shadow: 0 0 10px rgba(224,191,109,.7); }
+.ritual .r-trace .r-line[data-indent="1"].indented { padding-left: 2em; }
+.ritual .r-trace .r-line[data-indent="2"].indented { padding-left: 4em; }
+
+/* token particles flying from casting toward the tree */
+.ritual .r-motes { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ritual .mote { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: var(--gold); opacity: 0; animation: r-mote 7s ease-in-out infinite; }
+.ritual .r-spark {
+  position: absolute; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--gold-bright); box-shadow: 0 0 8px var(--gold-bright);
+  opacity: 0; pointer-events: none; z-index: 3;
+}
+.ritual .r-spark.fly { animation: r-spark-fly .9s ease-in forwards; }
+
+/* seal badge */
+.ritual .r-seal { margin: 26px auto 0; text-align: center; }
+.ritual .r-seal .badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: "JetBrains Mono", monospace; font-size: 14px; letter-spacing: .06em;
+  color: var(--bg); background: var(--gold); border: 1px solid var(--gold-bright);
+  padding: 10px 22px; border-radius: 3px; opacity: 0; transform: scale(.92);
+  transition: opacity .5s, transform .5s, box-shadow .5s;
+}
+.ritual .r-seal.sealed .badge { opacity: 1; transform: none; box-shadow: 0 0 26px rgba(224,191,109,.45); }
+.ritual .r-seal .glyph { font-family: "Cinzel Decorative", serif; font-weight: 700; }
+
+@keyframes r-flow { 0% { left: -40%; } 100% { left: 100%; } }
+@keyframes r-mote {
+  0% { opacity: 0; transform: translateY(20px) scale(.6); }
+  20% { opacity: .5; } 80% { opacity: .3; }
+  100% { opacity: 0; transform: translateY(-40px) scale(1); }
+}
+@keyframes r-spark-fly {
+  0% { opacity: 0; transform: translate(0,0) scale(.6); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: var(--spark-to) scale(1.1); }
+}
+
+@media (max-width: 700px) {
+  .ritual .r-stage-wrap { grid-template-columns: 1fr; gap: 14px; min-height: 0; }
+  .ritual .r-conduit { width: auto; height: 48px; }
+  .ritual .r-conduit .wire { top: 0; bottom: 0; left: 50%; right: auto; width: 2px; height: 100%; }
+  .ritual .r-conduit .wire::after { left: 0; right: 0; top: -40%; width: 100%; height: 40%; background: linear-gradient(180deg, transparent, var(--gold-bright), transparent); animation: r-flow-v 2.4s linear infinite; }
+  .ritual .r-right { min-height: 360px; }
+  @keyframes r-flow-v { 0% { top: -40%; } 100% { top: 100%; } }
+}
+@media (max-width: 480px) {
+  .ritual pre, .ritual .r-tree { font-size: 12px; }
+  .ritual .r-rail { gap: 6px 4px; }
+  .ritual .r-stage { font-size: 10px; padding: 4px 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ritual .r-trace .r-line { opacity: 1; transform: none; }
+  .ritual .r-trace .r-line[data-indent="1"] { padding-left: 2em; }
+  .ritual .r-trace .r-line[data-indent="2"] { padding-left: 4em; }
+  .ritual .r-node { opacity: 1; transform: none; }
+  .ritual .r-conduit .wire::after, .ritual .mote, .ritual .r-spark { animation: none; }
+  .ritual .r-seal .badge { opacity: 1; transform: none; }
+  .ritual .r-view { position: relative; inset: auto; opacity: 1; transform: none; margin-bottom: 22px; }
+  .ritual .r-view + .r-view { padding-top: 18px; border-top: 1px solid var(--shadow); }
+}
