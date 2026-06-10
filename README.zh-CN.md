@@ -10,38 +10,38 @@
 </p>
 
 <p align="center">
-  <b><a href="https://xrune.to01.icu/">The Grimoire</a></b> ·
-  <a href="https://xrune.to01.icu/book/">English docs</a> ·
+  <b><a href="https://xrune.to01.icu/">魔典</a></b> ·
   <a href="https://xrune.to01.icu/book/zh-CN/">中文文档</a> ·
-  <a href="README.zh-CN.md">中文 README</a>
+  <a href="https://xrune.to01.icu/book/">English docs</a> ·
+  <a href="README.md">English README</a>
 </p>
 
-A declarative UI DSL proc macro framework with pluggable code generation backends.
+一套声明式 UI DSL 过程宏框架，代码生成后端可插拔。
 
-## Features
+## 特性
 
-- Declarative widget tree syntax with nested children
-- Attribute expressions (any valid Rust expression as value)
-- Enchants — attach arbitrary data to nodes via `[expr, ...]` syntax
-- Context area with arbitrary key-value pairs
-- Conditional rendering (`if`)
-- Iteration (`walk ... with ...`)
-- Pluggable codegen via `DsRune` trait — bring your own backend
+- 声明式部件树语法，支持嵌套子节点
+- 属性即表达式（任意合法 Rust 表达式皆可作属性值）
+- 附魔：用 `[expr, ...]` 语法把任意数据挂到节点上
+- 上下文区，承载任意键值对
+- 条件渲染（`if`）
+- 迭代（`walk ... with ...`）
+- 经 `DsRune` trait 插拔代码生成，自带后端
 
-## Syntax
+## 语法
 
 ```rust
 use xrune::ui;
 
 fn app(parent: i32) {
     ui! {
-        // Context area: arbitrary key-value pairs (each attr on its own line)
+        // 上下文区：任意键值对（每项属性独占一行）
         :(
             parent: parent
             world: &mut world
         :)
 
-        // Widget with attributes
+        // 带属性的部件
         container (width: 480, height: 320, color: "dark") {
             header (height: 40, text: "Hello") {}
 
@@ -50,18 +50,18 @@ fn app(parent: i32) {
                 button (text: "Cancel", grow: 1.0) {}
             }
 
-            // Enchants: attach data to a node
+            // 附魔：把数据挂到节点上
             physics_obj (x: 100, y: 200) [
                 Velocity { vx: 1, vy: 0 },
                 Collider::circle(10),
             ] {}
 
-            // Iteration
+            // 迭代
             walk items.iter() with item {
                 label (text: item.name) {}
             }
 
-            // Conditional
+            // 条件
             if show_footer {
                 footer (height: 20) {}
             }
@@ -70,7 +70,7 @@ fn app(parent: i32) {
 }
 ```
 
-## Architecture
+## 架构
 
 ```mermaid
 block-beta
@@ -95,19 +95,19 @@ block-beta
     style J fill:#ede9fe,stroke:#7c3aed,color:#3b0764
 ```
 
-## Crates
+## Crate 一览
 
-| Crate | Description |
-|-------|-------------|
-| [`xrune`](https://crates.io/crates/xrune) | Main entry — re-exports everything |
-| [`xrune-nexus`](https://crates.io/crates/xrune-nexus) | Core: AST + DsRune trait + decipher |
-| [`xrune-incant`](https://crates.io/crates/xrune-incant) | Proc macro: `ui!` invocation |
-| [`xrune-sigil`](https://crates.io/crates/xrune-sigil) | Derive macro: `DsRef` |
-| [`xrune-fmt`](https://crates.io/crates/xrune-fmt) | CLI formatter for `ui! { … }` blocks |
+| Crate | 说明 |
+|-------|------|
+| [`xrune`](https://crates.io/crates/xrune) | 聚合入口，重导出全部 |
+| [`xrune-nexus`](https://crates.io/crates/xrune-nexus) | 中枢：AST + DsRune trait + decipher |
+| [`xrune-incant`](https://crates.io/crates/xrune-incant) | 过程宏：`ui!` 调用 |
+| [`xrune-sigil`](https://crates.io/crates/xrune-sigil) | derive 宏：`DsRef` |
+| [`xrune-fmt`](https://crates.io/crates/xrune-fmt) | `ui! { … }` 块的 CLI 格式化器 |
 
-## Custom Backend
+## 自定义后端
 
-Implement `DsRune` to generate your own code:
+实现 `DsRune`，生成你自己的代码：
 
 ```rust
 use xrune::ds_rune::DsRune;
@@ -125,8 +125,8 @@ impl DsRune for MyRune {
         &mut self,
         name: &syn::Ident,
         attrs: &[DsAttr],
-        enchants: &[syn::Expr],   // [expr, ...] attached data
-        on_handlers: &[DsOn],     // every `on EventKind` clause on this widget
+        enchants: &[syn::Expr],   // [expr, ...] 挂上来的数据
+        on_handlers: &[DsOn],     // 这个部件上的每一道 `on EventKind` 子句
         children: &[DsTreeRef],
     ) { /* ... */ }
 
@@ -147,9 +147,9 @@ impl DsRune for MyRune {
 }
 ```
 
-## Context Area
+## 上下文区
 
-The `:( … :)` block passes arbitrary context to the Rune implementation. Each attribute sits on its own line. The `parent` key is required; all others are optional and Rune-specific.
+`:( … :)` 块向符文师传入任意上下文。每项属性独占一行。`parent` 键必填，其余皆可选、由符文师自行约定。
 
 ```rust
 ui! {
@@ -162,6 +162,6 @@ ui! {
 }
 ```
 
-## License
+## 许可证
 
 MIT
