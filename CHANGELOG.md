@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0] - 2026-06-10
+
+### Changed
+
+- **`xrune-fmt` inlines `on` handlers** — an `on EventKind { ... }` clause now follows the attribute or enchant close on the same line (`) on Tap { ... }`, `] on Tap { ... }`) and chains across multiple handlers, with the body indented under the widget. Previously each `on` clause started its own indented line, which read as detached from the node.
+- **`xrune-fmt` omits braces for childless nodes** — a widget node with no children formats without a trailing `{}` (`Text ("x")` instead of `Text ("x") {}`). Nodes with children, and `if` / `walk` / `@niche` / `match`, are unchanged. Input with explicit `{}` still parses.
+
 ## [1.5.2] - 2026-06-08
 
 ### Added
