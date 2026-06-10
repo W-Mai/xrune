@@ -1,0 +1,289 @@
+@font-face {
+  font-family: "Cardo";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/cardo-regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cardo";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/cardo-bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cinzel Decorative";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/cinzeldecorative-regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cinzel Decorative";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/cinzeldecorative-bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/jetbrains-mono-regular.woff2") format("woff2");
+}
+
+:root {
+  --bg: #1c160f;
+  --fg: #e8d9b8;
+  --muted: #bba47a;
+  --gold: #c5a253;
+  --gold-bright: #e0bf6d;
+  --rubric: #a23a2c;
+  --shadow: #3a2f1d;
+  --panel: #15110b;
+  --panel-2: #0f0c08;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Cardo", "Source Serif 4", Georgia, serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--gold);
+  transition: color 0.2s, border-color 0.2s;
+}
+a:hover {
+  color: var(--gold-bright);
+  border-bottom-color: var(--gold-bright);
+}
+
+code {
+  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--panel-2);
+  color: #f4d99c;
+  padding: 0.05em 0.4em;
+  border: 1px solid var(--gold);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(15, 12, 8, 0.9), 0 0 6px rgba(197, 162, 83, 0.18);
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+a code { border-color: var(--gold); }
+
+.container {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 96px 24px 64px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at top, rgba(197, 162, 83, 0.12), transparent 60%),
+    var(--bg);
+  border-bottom: 1px solid var(--shadow);
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.33;
+  pointer-events: none;
+  /* dim the pattern behind the title block, keep it bright toward the edges */
+  -webkit-mask-image: radial-gradient(ellipse 52% 60% at center, rgba(0,0,0,0.35), black 85%);
+  mask-image: radial-gradient(ellipse 52% 60% at center, rgba(0,0,0,0.35), black 85%);
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.brand {
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-weight: 700;
+  font-size: clamp(56px, 11vw, 120px);
+  letter-spacing: 0.18em;
+  margin: 0;
+  color: var(--gold);
+  line-height: 1;
+  text-shadow: 0 0 28px rgba(224, 191, 109, 0.18);
+}
+
+.subtitle {
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-size: clamp(20px, 3.4vw, 28px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  margin: 8px 0 28px;
+}
+
+.tagline {
+  font-size: clamp(18px, 2.6vw, 22px);
+  margin: 0 0 4px;
+  color: var(--fg);
+}
+.tagline-zh {
+  font-size: clamp(15px, 2.2vw, 18px);
+  margin: 0 0 36px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 11px 24px;
+  border-radius: 3px;
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.btn.primary {
+  background: var(--gold);
+  color: var(--bg);
+}
+.btn.primary:hover {
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+  color: var(--bg);
+}
+
+.btn.primary.alt {
+  background: var(--rubric);
+  color: var(--fg);
+  border-color: var(--rubric);
+}
+.btn.primary.alt:hover {
+  background: #c4523f;
+  border-color: #c4523f;
+}
+
+.btn.secondary {
+  background: transparent;
+  color: var(--gold);
+}
+.btn.secondary:hover {
+  background: rgba(197, 162, 83, 0.08);
+  color: var(--gold-bright);
+  border-color: var(--gold-bright);
+}
+
+/* sections */
+section {
+  padding: 64px 24px;
+  border-bottom: 1px solid var(--shadow);
+}
+
+h2 {
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-weight: 400;
+  font-size: clamp(26px, 4vw, 36px);
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  margin: 0 0 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--shadow);
+}
+
+h3 {
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-weight: 400;
+  font-size: 1.18em;
+  color: var(--gold-bright);
+  margin: 0 0 12px;
+  letter-spacing: 0.04em;
+}
+
+p { margin: 0 0 1em; }
+em { color: var(--gold-bright); font-style: italic; }
+
+/* Volumes table */
+.volumes table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+.volumes th, .volumes td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--shadow);
+}
+.volumes th {
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--gold);
+  background: var(--panel);
+}
+.volumes tbody tr:hover { background: rgba(197, 162, 83, 0.04); }
+.volumes td:nth-child(2) { color: var(--gold); white-space: nowrap; }
+
+/* Cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--shadow);
+  border-radius: 4px;
+  padding: 24px;
+}
+.card p { margin: 0; color: var(--fg); }
+
+/* Footer */
+footer {
+  padding: 32px 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+footer a { border-bottom-style: dotted; }
+
+@media (max-width: 540px) {
+  .hero { padding-top: 64px; padding-bottom: 48px; }
+  .cta { flex-direction: column; gap: 10px; }
+  .btn { width: 100%; }
+  .volumes td:nth-child(2) { font-size: 13px; }
+  section { padding: 48px 18px; }
+}

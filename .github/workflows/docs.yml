@@ -32,22 +32,30 @@ jobs:
         uses: taiki-e/cache-cargo-install-action@v2
         with: { tool: mdbook-mermaid }
 
+      - name: Copy landing page + fonts to pages/
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/pages/fonts"
+          cp -r docs/landing/. "$GITHUB_WORKSPACE/pages/"
+          cp docs/theme/fonts/*.woff2 "$GITHUB_WORKSPACE/pages/fonts/"
+
       - name: Build EN tree
-        run: mdbook build docs -d "$GITHUB_WORKSPACE/pages"
+        env:
+          MDBOOK_OUTPUT__HTML__SITE_URL: /book/
+        run: mdbook build docs -d "$GITHUB_WORKSPACE/pages/book"
 
       - name: Build zh-CN tree
         env:
           MDBOOK_BOOK__SRC: src-zh-CN
           MDBOOK_BOOK__LANGUAGE: zh-CN
-          MDBOOK_OUTPUT__HTML__SITE_URL: /zh-CN/
-        run: mdbook build docs -d "$GITHUB_WORKSPACE/pages/zh-CN"
+          MDBOOK_OUTPUT__HTML__SITE_URL: /book/zh-CN/
+        run: mdbook build docs -d "$GITHUB_WORKSPACE/pages/book/zh-CN"
 
       - name: Install Pagefind
         run: |
           curl -fsSL https://github.com/CloudCannon/pagefind/releases/download/v1.4.0/pagefind-v1.4.0-x86_64-unknown-linux-musl.tar.gz \
             | tar -xz -C /usr/local/bin
-      - run: pagefind --site pages
-      - run: pagefind --site pages/zh-CN
+      - run: pagefind --site pages/book
+      - run: pagefind --site pages/book/zh-CN
 
       - run: touch pages/.nojekyll
 

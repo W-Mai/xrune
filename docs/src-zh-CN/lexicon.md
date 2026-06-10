@@ -7,7 +7,7 @@
 | 原词 | 译名 | 工程含义 |
 | --- | --- | --- |
 | **sigil** | 印玺 | 一个 derive 宏 crate（`xrune-sigil`）。`DsRef` derive 为目标 struct 锻造 `{Name}Ref` newtype，内里是 `Rc<RefCell<Name>>`。 |
-| **nexus** | 中枢 | 核心 crate（`xrune-nexus`）。AST 节点类型、`DsRune` trait、`decipher` 译咒走脚，皆在此。其余 crate 都向这里收束。 |
+| **nexus** | 中枢 | 核心 crate（`xrune-nexus`）。AST 节点类型、`DsRune` trait、`decipher` 遍历器，皆在此。其余 crate 都向这里收束。 |
 | **incant** | 咒坛 | 过程宏 crate（`xrune-incant`），导出 `ui! { … }`。咏唱即调起 DSL 的动作。 |
 | **rune** | 符文师 | `DsRune` trait 的一个后端实现。把解析出的树翻成最终代码。咒文只一道；符文师可有许多种译法。 |
 | **decipher** | 译咒 | 自由函数 `xrune::ds_rune::decipher::decipher(tree, &mut rune)`。遍历 `DsTree`，对每个节点调一次符文师的 inscribe 方法。 |

@@ -3,9 +3,9 @@
 从 `cargo new` 到看见 `decipher` 真的跑出来：五分钟。
 
 例子**不**渲染 UI：这本书没有部件运行时。它产出的是过程宏展开后的
-内置 `DefaultRune` 输出：一串 `println!`，把 parser 喂给 rune 的每个
-节点都打一遍。这就是本章的全部学习面。真实的后端在
-[绑定符文](binding.md) 章。
+内置 `DefaultRune` 输出：一串 `println!`，把 parser 喂给符文师的每个
+节点都打一遍。本章要学的就这些。真正干活的后端要到
+[绑定符文](binding.md) 一章才登场。
 
 ## 起步
 
@@ -14,7 +14,7 @@ cargo new hello-xrune
 cd hello-xrune
 ```
 
-`Cargo.toml`:
+`Cargo.toml`：
 
 ```toml
 [package]
@@ -28,7 +28,7 @@ xrune = "1.5"
 
 ## 最小一咒
 
-`src/main.rs`:
+`src/main.rs`：
 
 ```rust
 # use xrune::ui;
@@ -49,21 +49,21 @@ ui! {
 ```
 
 > ⚠ ▶ 按钮把代码发到 play.rust-lang.org，但**那里没有 `xrune` 这个 crate**，
-> 在线运行会失败。点眼睛 ( 👁 ) 切换显示完整代码，复制到本地 `cargo new`
+> 在线运行会失败。点眼睛（👁）图标切换显示完整代码，复制到本地 `cargo new`
 > 项目里、`Cargo.toml` 加 `xrune = "1.5"`，再 `cargo run` 才能跑通。
 
-本地 `cargo run` 后，会看到 `DefaultRune` 的 trace:
+本地 `cargo run` 后，会看到 `DefaultRune` 的 trace：
 
 ```text
 inscribe_root: 0
 inscribe_widget: container, attrs: [width: 100, height: 100], children: []
 ```
 
-（具体字符串依版本略有差异，结构不会变。)
+（具体字符串依版本略有差异，结构不会变。）
 
-完了。parser 接受了 `ui!` 块，`decipher` 遍历器走遍了每个节点，内置
-rune 把它看到的东西打了出来。除此之外什么都没发生。没有部件，没有窗口
-打开。
+到此为止。parser 接受了 `ui!` 块，`decipher` 遍历器走遍了每个节点，内置
+rune 把它看到的东西打了出来。除此之外什么都没发生。没有部件，也没有窗口
+弹出。
 
 ## 稍大一点的咒
 
@@ -111,7 +111,7 @@ ui! {
 从这一段读出来的事：
 
 - `:( ... :)` 块（`parent: parent` 单独占一行）是**上下文区**。`parent`
-  是唯一必填键；rune 通过 `DsRoot::get_parent()` 拿到它。
+  是唯一必填键；符文师通过 `DsRoot::get_parent()` 取到它。
 - `width: 100, height: 100 + A, color: "red"`：属性值是任意
   `syn::Expr`。`100 + A` 是一个 Rust 表达式，不是字符串。
 - `text (content: "hello world") { picker (…) {} }`：子节点嵌套。
@@ -130,8 +130,8 @@ crate 出的一个过程宏。展开时它把 token 流解析成 `DsRoot`（AST 
 然后对子树跑 `decipher`。每个被访问的节点，widget / `if` / `walk` /
 `@niche` / `match`，触发 rune 的某一个 `inscribe_*` 方法。最后 rune
 被 `seal`，它累积的 `TokenStream` 就成了宏的输出。对 `DefaultRune` 而言
-这个输出是一串 `println!`，这就是为什么这个例子不需要 UI 运行时也能
-「跑」。
+这个输出是一串 `println!`，此例之所以不挂 UI 运行时也能
+「跑」，正是此故。
 
 ## 接下来
 

@@ -1,6 +1,6 @@
 # 被拒形态
 
-不是每一种**看起来合理**的形态都能 parse。下面的情形都是**有意**拒收：parser 宁可拒一个有歧义的咒文，也不会替你猜。
+不是每一种**看起来合理**的形态都能 parse。下面的情形都是**有意**拒收：parser 宁可拒收一个有歧义的咒文，也不会替你猜。
 
 ## 上下文头
 
@@ -40,4 +40,4 @@ match e                /* parse error */
 
 ## 这些拒收用例藏在哪
 
-每条 error case 在 [`crates/xrune_nexus/src/tests.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/tests.rs) 里都有一条单测。测试名以 `error_*` 起头：真正的 `ui!` 块 parse 失败而错误消息一时看不出端倪时，那张目录是个好去处。
+每条 error case 在 [`crates/xrune_nexus/src/tests.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/tests.rs) 里都有一条单测。测试名以 `error_*` 起头：真正的 `ui!` 块 parse 失败、错误消息一时又看不出端倪时，那卷 `tests.rs` 是个好去处。

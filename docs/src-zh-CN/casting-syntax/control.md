@@ -21,7 +21,7 @@ if show_footer {
 
 条件是一个完整的 `syn::Expr`，解析时**不**吞花括号（body 块是单独一对 `{ … }`）。body **必填**：没 body 的 `if` 直接 parse 错。
 
-符文师从 `inscribe_if(condition, children)` 看到它。DSL 层没有 `else` 分支；要分两路，写两个反向条件的 `if`，或者用 `match` 做二路分。
+符文师从 `inscribe_if(condition, children)` 看到它。DSL 层没有 `else` 分支；要分两路，写两道条件相反的 `if`，或借 `match` 分作两途。
 
 ## `walk … with …` — 巡历
 

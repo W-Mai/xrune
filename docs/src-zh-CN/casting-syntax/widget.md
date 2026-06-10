@@ -49,7 +49,7 @@ root_widget {
 
 ## 具名属性 vs 位置属性
 
-`DsAttr` 带 `name: Option<syn::Ident>`。parser 先尝试 `name: value` 形态，匹不上则退化为裸表达式的位置属性。同一个 widget 里两种形态可混用，顺序保留：
+`DsAttr` 带 `name: Option<syn::Ident>`。parser 先尝试 `name: value` 形态，匹配不上则退化为裸表达式的位置属性。同一个部件里两种形态可混用，顺序保留：
 
 ```rust
 # use xrune::ui;
@@ -126,7 +126,7 @@ window (title: "Cast") {
 # fn main() {}
 ```
 
-每个子节点本身就是一棵 `DsTree`，所以部件、`if`、`walk`、`@niche`、`match` 都能嵌进另一个部件的 body 里。组合**没有任何语法限制**：哪些组合**真有意义**，由符文师把关。
+每个子节点本身就是一棵 `DsTree`，所以部件、`if`、`walk`、`@niche`、`match` 都能嵌进另一个部件的 body 里。组合**没有任何语法限制**：哪些组合**确有意义**，由符文师把关。
 
 ## 源码出处
 

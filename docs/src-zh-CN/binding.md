@@ -6,7 +6,7 @@
 
 ## 师契
 
-`DsRune` 申明 **七** 道方法。**没有任何一道带默认实现**：每一位具象的符文师都得给齐七道。
+`DsRune` 声明 **七** 道方法。**没有任何一道带默认实现**：每一位具象的符文师都得给齐七道。
 
 ```rust,ignore
 pub trait DsRune {
@@ -129,7 +129,7 @@ fn inscribe_widget(&mut self, name: &syn::Ident, /* … */ children: &[DsTreeRef
 }
 ```
 
-这个形态把 parent 身份穿过任意层嵌套，**不动用全局**。
+这个形态把 parent 身份贯穿任意层嵌套，**不动用全局**。
 
 ## 工坊范本：`DefaultRune`
 
@@ -140,7 +140,7 @@ fn inscribe_widget(&mut self, name: &syn::Ident, /* … */ children: &[DsTreeRef
 - `xrune::default_rune::DefaultRune`，公开、文档化，写自己符文师时照着抄的那一份。
 - 藏在 `xrune-incant` 内部的私本，`ui! { … }` 宏展开时实际跑的那一份。
 
-**为什么两份？** 因为 `xrune-incant` 是 proc-macro crate，Rust 编译器有一条硬规矩：
+**为什么两份？** 因为 `xrune-incant` 是 proc-macro crate，Rust 编译器有一条铁律：
 
 > proc-macro crate 对外只能导出 `#[proc_macro]` / `#[proc_macro_derive]` / `#[proc_macro_attribute]` 这三类宏函数。crate 里**所有**的 `pub struct` / `pub fn` / `pub mod`，对任何下游 crate 都不可见。
 
@@ -151,13 +151,13 @@ error[E0432]: unresolved import `xrune_incant::DefaultRune`
   no `DefaultRune` in the root
 ```
 
-`xrune-incant` 只能在内部留一份私本给自家 `ui!` expansion 用。`xrune` 拿不到那份，于是自己另写了一份独立的 `default_rune` 模块，作为对读者公开的"参考实现"。两份逻辑与输出按字节对齐，只差在可见性。
+`xrune-incant` 只能在内部留一份私本给自家 `ui!` expansion 用。`xrune` 拿不到那份，于是自己另写了一份独立的 `default_rune` 模块，作为对读者公开的"参考实现"。两份逻辑与输出逐字节一致，只差在可见性。
 
 （理论上可以把 `default_rune` 沉到 `xrune-nexus` 让两边都 import，但那会把后端代码，以及它带来的 `quote` 依赖，拖进核心。`xrune-nexus` 要保持只有 AST、`DsRune` trait、`decipher`，不绑定任何具体后端。）
 
 ## `ui! { … }` 实际做了什么
 
-这个过程宏**不是**扩展点。它的全部函数体：
+这个过程宏**不是**扩展点。它的函数体完整如下：
 
 ```rust,ignore
 #[proc_macro]
@@ -174,7 +174,7 @@ pub fn ui(input: TokenStream) -> TokenStream {
 
 明白讲：**`ui!` 是「parser → `decipher` → `seal` 整条管子能跑通」的演示**，不是真后端的入口。
 
-## 在你自己 crate 里宿主 xrune
+## 在你自己 crate 里安奉 xrune
 
 要做真后端，你**不调** `ui!`。你新建**自己的 proc-macro crate**，把那五行宿主样板抄过去，把 `DefaultRune` 换成自己的符文师。形态如下：
 
@@ -195,7 +195,7 @@ proc-macro2 = "1"
 quote = "1"
 ```
 
-`xrune` 是 umbrella 主 crate，重导出了 `xrune-nexus`（parser、`DsRune` trait、`decipher` 走脚），且把 `xrune::default_rune::DefaultRune` 暴露成可抄写的参考符文师。你也可以直接依赖 `xrune-nexus` 跳过 umbrella，但走 `xrune` 路径更短，调试期还能直接用公本 `DefaultRune` 占位。
+`xrune` 是聚合入口 crate，把 `xrune-nexus`（parser、`DsRune` trait、`decipher` 遍历器）整个重导出（re-export），并公开 `xrune::default_rune::DefaultRune` 作为一份可照抄的参考符文师。绕开它、直接依赖 `xrune-nexus` 也行，但用 `xrune` 引入路径更短，写原型时还能顺手拿现成的 `DefaultRune` 顶上。
 
 **`my-host-incant/src/lib.rs`**
 

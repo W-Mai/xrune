@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Lost Casting · 404 · xrune</title>
+<meta name="description" content="This page is not inscribed in the grimoire.">
+
+<meta property="og:title" content="A Lost Casting · 404 · xrune">
+<meta property="og:description" content="This page is not inscribed in the grimoire. The rite that summoned it has been resealed.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://xrune.to01.icu/og-card.png">
+<meta property="og:url" content="https://xrune.to01.icu/404.html">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" href="/favicon.png">
+
+<style>
+@font-face {
+  font-family: "Cardo";
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/cardo-regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cardo";
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/cardo-bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cinzel Decorative";
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/cinzeldecorative-regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cinzel Decorative";
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/cinzeldecorative-bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/jetbrains-mono-regular.woff2") format("woff2");
+}
+
+:root {
+  --bg: #1c160f;
+  --fg: #e8d9b8;
+  --muted: #bba47a;
+  --gold: #c5a253;
+  --gold-bright: #e0bf6d;
+  --rubric: #a23a2c;
+  --shadow: #3a2f1d;
+  --panel: #15110b;
+  --panel-2: #0f0c08;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Cardo", "Source Serif 4", Georgia, serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at top, rgba(197, 162, 83, 0.10), transparent 60%),
+    var(--bg);
+}
+
+/* faint gold runework drifting behind the panel, same pattern as the landing hero */
+.bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.12;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 58% 62% at center, rgba(0,0,0,0.14), black 90%);
+  mask-image: radial-gradient(ellipse 58% 62% at center, rgba(0,0,0,0.14), black 90%);
+}
+
+.scroll {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  width: 100%;
+  text-align: center;
+  padding: 8px 28px;
+  /* sink the centre so the background runework never cuts across the copy */
+  background: radial-gradient(ellipse 75% 70% at center, rgba(28,22,15,0.92) 30%, rgba(28,22,15,0.55) 65%, transparent 100%);
+}
+
+/* the broken sigil: 404 rendered as a struck rune */
+.glyph {
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-weight: 700;
+  font-size: clamp(88px, 22vw, 168px);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  margin: 0;
+  text-shadow: 0 0 38px rgba(224, 191, 109, 0.16);
+}
+.glyph .crack {
+  color: var(--rubric);
+  text-shadow: 0 0 26px rgba(162, 58, 44, 0.30);
+}
+
+.rule {
+  margin: 24px auto 28px;
+  width: 220px;
+  max-width: 70%;
+  height: 1px;
+  border: none;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  position: relative;
+}
+.rule::after {
+  content: "\2756";
+  position: absolute;
+  top: -0.7em;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--gold);
+  background: var(--bg);
+  padding: 0 0.5em;
+  font-size: 0.9rem;
+}
+
+.kicker {
+  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rubric);
+  margin: 0 0 10px;
+}
+
+h1 {
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-weight: 400;
+  font-size: clamp(26px, 5vw, 38px);
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  margin: 0 0 6px;
+}
+.title-zh {
+  font-family: "Cardo", serif;
+  font-size: clamp(17px, 3vw, 21px);
+  color: var(--gold-bright);
+  margin: 0 0 22px;
+  letter-spacing: 0.04em;
+}
+
+.lede {
+  color: var(--fg);
+  margin: 0 0 6px;
+}
+.lede-zh {
+  color: var(--muted);
+  font-style: italic;
+  margin: 0 0 32px;
+  font-size: 0.95em;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+.nav a {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 3px;
+  font-family: "Cinzel Decorative", "Cardo", serif;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--gold);
+  background: transparent;
+  border: 1px solid var(--gold);
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+.nav a:hover, .nav a:focus {
+  background: rgba(197, 162, 83, 0.08);
+  color: var(--gold-bright);
+  border-color: var(--gold-bright);
+  outline: none;
+}
+.nav a.home {
+  background: var(--gold);
+  color: var(--bg);
+}
+.nav a.home:hover {
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+  color: var(--bg);
+}
+
+.hint {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+}
+.hint a {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--gold);
+  transition: color 0.2s, border-color 0.2s;
+}
+.hint a:hover {
+  color: var(--gold-bright);
+  border-bottom-color: var(--gold-bright);
+}
+kbd {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.82em;
+  background: var(--panel-2);
+  color: #f4d99c;
+  padding: 0.1em 0.45em;
+  border: 1px solid var(--gold);
+  border-radius: 2px;
+}
+
+@media (max-width: 480px) {
+  .nav { flex-direction: column; gap: 10px; }
+  .nav a { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<img class="bg" src="/hero-pattern.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+
+<main class="scroll">
+  <p class="glyph">4<span class="crack">0</span>4</p>
+  <hr class="rule">
+
+  <p class="kicker">404 · Not Found</p>
+  <h1>A Lost Casting</h1>
+  <p class="title-zh">一段失落的咒文</p>
+
+  <p class="lede">This page is not inscribed in the grimoire &mdash; either it was never written, or the rite that summoned this URL has since been resealed.</p>
+  <p class="lede-zh">此页未录于典籍。或它从未写就，或召请此 URL 的咒语早已重新封印。</p>
+
+  <nav class="nav" aria-label="Site sections">
+    <a class="home" href="/">Home · 首页</a>
+    <a href="/book/">Docs (EN)</a>
+    <a href="/book/zh-CN/">文档 (中文)</a>
+    <a href="https://github.com/W-Mai/xrune">GitHub</a>
+  </nav>
+
+  <p class="hint">Seeking something by name? Open the <a href="/book/">grimoire</a> and press <kbd>s</kbd> to search. · 想按名查找？翻开<a href="/book/zh-CN/">魔典</a>，按 <kbd>s</kbd> 检索。</p>
+</main>
+
+</body>
+</html>

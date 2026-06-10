@@ -22,7 +22,7 @@ button (text: "Save") {} on Tap {
 # fn main() {}
 ```
 
-嵌进某个 body 时，形态 B 附着到**紧靠前的兄弟部件**，**不**附着到父：
+嵌进某个 body 时，形态 B 附着到**紧靠前的兄弟部件**，**不**附着到父部件：
 
 ```rust
 # use xrune::ui;
@@ -142,9 +142,9 @@ on Tap(2, callback)
 # fn main() {}
 ```
 
-带体形态下 `DsOn::get_body()` 返回 `Some(&syn::Block)`；回调形态下返回 `None`，由符文师自行决定 `get_args()` 末尾那个元素的语义：通常的约定是「事件触发时被调起的可调用表达式」。
+带体形态下 `DsOn::get_body()` 返回 `Some(&syn::Block)`；回调形态下返回 `None`，由符文师自行决定 `get_args()` 末尾那个元素的语义：通常的约定是「事件触发时所调起的表达式」。
 
-子句既无 body 又无 args，是 parse 错。
+子句若既无 body 又无 args，即为 parse 错。
 
 ## 限定的事件名
 
@@ -177,7 +177,7 @@ on Tap(cb)                          /* 回调形态，无 body */
 on Tap(2, cb)                       /* count + 回调 */
 ```
 
-子句**两者皆无**（既无 body 又无 args），是 parse 错：每个 `on` 至少要带其中一种。
+子句 body 与 args **两者皆无**时，即为 parse 错：每个 `on` 至少要带其中一种。
 
 ## 源码出处
 

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>xrune · The Grimoire</title>
+<meta name="description" content="A declarative UI DSL proc-macro framework with pluggable code-generation backends.">
+
+<meta property="og:title" content="xrune · The Grimoire">
+<meta property="og:description" content="A declarative UI DSL proc-macro framework with pluggable code-generation backends.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://xrune.to01.icu/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+<meta property="og:url" content="https://xrune.to01.icu/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" href="favicon.png">
+
+<link rel="preload" as="font" href="fonts/cardo-regular.woff2" type="font/woff2" crossorigin>
+<link rel="preload" as="font" href="fonts/cinzeldecorative-regular.woff2" type="font/woff2" crossorigin>
+
+<link rel="stylesheet" href="landing.css">
+</head>
+<body>
+
+<header class="hero">
+  <img class="hero-bg" src="hero-pattern.svg" alt="" aria-hidden="true">
+  <div class="hero-inner">
+    <h1 class="brand">XRUNE</h1>
+    <p class="subtitle">The Grimoire</p>
+    <p class="tagline">One casting, many inscriptions. You speak the rite; the runesmith cuts it into code.</p>
+    <p class="tagline-zh">咒成于文，文译于师。一咒既立，万法可镌。</p>
+
+    <div class="cta">
+      <a class="btn primary" href="book/">Read the Grimoire</a>
+      <a class="btn primary alt" href="book/zh-CN/">阅读中文版</a>
+      <a class="btn secondary" href="https://github.com/W-Mai/xrune">GitHub</a>
+      <a class="btn secondary" href="https://crates.io/crates/xrune">crates.io</a>
+    </div>
+  </div>
+</header>
+
+<section class="pitch">
+  <div class="container">
+    <h2>What it is</h2>
+    <p>
+      <code>xrune</code> is a Rust proc-macro framework. You write a casting in
+      its declarative DSL, and a <em>runesmith</em> you bind (an
+      implementation of the seven-method <code>DsRune</code> trait) inscribes
+      it into whatever code your host actually needs &mdash; ECS spawn calls,
+      a render-tree builder, a debug echo, a formatter round-trip.
+    </p>
+    <p>
+      The DSL parses; the runesmith decides what the parse becomes. Same
+      casting, many translations.
+    </p>
+  </div>
+</section>
+
+<section class="volumes">
+  <div class="container">
+    <h2>Five volumes and a hub</h2>
+    <table>
+      <thead>
+        <tr><th>Volume</th><th>Suffix</th><th>Office</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><a href="https://crates.io/crates/xrune"><code>xrune</code></a></td><td>—</td><td>Opening scroll. The single dependency a reader summons.</td></tr>
+        <tr><td><a href="https://crates.io/crates/xrune-nexus"><code>xrune-nexus</code></a></td><td><strong>nexus</strong></td><td>The hub. AST, the <code>DsRune</code> trait, the <code>decipher</code> walker.</td></tr>
+        <tr><td><a href="https://crates.io/crates/xrune-incant"><code>xrune-incant</code></a></td><td><strong>incant</strong></td><td>The speaking-stone. The <code>ui! { … }</code> proc macro.</td></tr>
+        <tr><td><a href="https://crates.io/crates/xrune-sigil"><code>xrune-sigil</code></a></td><td><strong>sigil</strong></td><td>The sigil-forge. The <code>DsRef</code> derive.</td></tr>
+        <tr><td><a href="https://crates.io/crates/xrune-fmt"><code>xrune-fmt</code></a></td><td><strong>fmt</strong></td><td>The scribe. Formatter for <code>ui! { … }</code> blocks.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="why">
+  <div class="container">
+    <h2>When to reach for it</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Plug-in code-gen</h3>
+        <p>One DSL, many runes. The same casting can become spawn calls, a render builder, a static analyzer.</p>
+      </div>
+      <div class="card">
+        <h3>Untyped at parse time</h3>
+        <p>Widget names are arbitrary idents; attribute values are arbitrary <code>syn::Expr</code>. All semantics live in the runesmith you bind.</p>
+      </div>
+      <div class="card">
+        <h3>Built for hosting</h3>
+        <p>Ship your own proc-macro crate, swap in your own runesmith, and downstream users write the same DSL with your code-gen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>
+      MIT licence ·
+      <a href="https://github.com/W-Mai/xrune">github.com/W-Mai/xrune</a> ·
+      <a href="book/">English docs</a> ·
+      <a href="book/zh-CN/">中文文档</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
