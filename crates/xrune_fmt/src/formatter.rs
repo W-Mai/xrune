@@ -67,8 +67,7 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
             }
 
             for on in widget.get_on_handlers() {
-                out.push('\n');
-                out.push_str(&child_indent);
+                out.push(' ');
                 out.push_str("on ");
                 if let Some(q) = on.get_qualifier() {
                     out.push_str(&q.to_string());
@@ -88,14 +87,23 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
                 }
                 if let Some(body) = on.get_body() {
                     out.push(' ');
-                    out.push_str(&fmt_block(body, &child_indent));
+                    out.push_str(&fmt_block(body, indent));
                 }
             }
 
-            // Children
             let children = borrowed.get_children();
+            let has_on = !widget.get_on_handlers().is_empty();
             if children.is_empty() {
-                out.push_str(" {}\n");
+                out.push('\n');
+            } else if has_on {
+                out.push('\n');
+                out.push_str(indent);
+                out.push_str("{\n");
+                for child in children {
+                    format_tree(child, &child_indent, out);
+                }
+                out.push_str(indent);
+                out.push_str("}\n");
             } else {
                 out.push_str(" {\n");
                 for child in children {
@@ -316,4 +324,153 @@ fn fmt_block(block: &syn::Block, indent: &str) -> String {
     out.push_str(indent);
     out.push('}');
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn fmt(s: &str) -> String {
+        format_dsl(s, "").unwrap()
+    }
+
+    const CTX: &str = "
+:(
+parent: parent
+world: world
+:)
+
+";
+
+    #[test]
+    fn childless_node_omits_braces() {
+        let out = fmt(&format!(
+            "{CTX}Text (\"hi\") {{}}
+"
+        ));
+        assert!(
+            out.contains(
+                "Text (\"hi\")
+"
+            ),
+            "childless should drop braces, got:
+{out}"
+        );
+        assert!(
+            !out.contains("Text (\"hi\") {}"),
+            "should not emit empty braces, got:
+{out}"
+        );
+    }
+
+    #[test]
+    fn node_with_children_keeps_braces() {
+        let out = fmt(&format!(
+            "{CTX}Column (grow: 1.0) {{ Text (\"x\") {{}} }}
+"
+        ));
+        assert!(
+            out.contains(
+                "Column (grow: 1.0) {
+"
+            ),
+            "got:
+{out}"
+        );
+        assert!(
+            out.contains(
+                "    }
+"
+            ),
+            "closing brace, got:
+{out}"
+        );
+    }
+
+    #[test]
+    fn on_handler_childless_no_trailing_braces() {
+        let out = fmt(&format!(
+            "{CTX}View (a: 1.0) on Tap {{ foo(); }} {{}}
+"
+        ));
+        // on-handler present, no children -> no trailing {}
+        assert!(
+            !out.contains("} {}"),
+            "on-handler childless should not emit trailing braces, got:
+{out}"
+        );
+    }
+
+    #[test]
+    fn on_handler_with_children_indent_aligned() {
+        let out = fmt(&format!(
+            "{CTX}View (a: 1.0) on Tap {{ foo(); }} {{ Text (\"d\") {{}} }}
+"
+        ));
+        // children { must NOT be "} {" glued; must align under the widget indent
+        assert!(
+            !out.contains(
+                "} {
+"
+            ),
+            "children brace should not glue to on-handler close, got:
+{out}"
+        );
+        // child Text is childless -> no braces
+        assert!(
+            out.contains(
+                "Text (\"d\")
+"
+            ),
+            "nested childless drops braces, got:
+{out}"
+        );
+    }
+
+    #[test]
+    fn on_handler_follows_enchant_close_same_line() {
+        let out = fmt(&format!(
+            "{CTX}View (a: 1.0) [ X ] on Tap {{ foo(); }} {{}}
+"
+        ));
+        assert!(
+            out.contains("] on Tap {"),
+            "on must follow ] on same line, got:
+{out}"
+        );
+        assert!(
+            !out.contains(
+                "]
+                on Tap"
+            ),
+            "on must not start a new indented line, got:
+{out}"
+        );
+    }
+
+    #[test]
+    fn on_handler_follows_attr_close_same_line() {
+        let out = fmt(&format!(
+            "{CTX}View (a: 1.0) on Tap {{ foo(); }} {{}}
+"
+        ));
+        assert!(
+            out.contains("View (a: 1.0) on Tap {"),
+            "on must follow ) on same line, got:
+{out}"
+        );
+    }
+
+    #[test]
+    fn multi_on_handlers_chain_same_line() {
+        let out = fmt(&format!(
+            "{CTX}View (a: 1.0) on DragMove {{ a(); }} on DragEnd {{ b(); }} {{}}
+"
+        ));
+        assert!(
+            out.contains("} on DragEnd {"),
+            "second on must follow first close same line, got:
+{out}"
+        );
+    }
 }
