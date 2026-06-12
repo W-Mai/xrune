@@ -26,6 +26,7 @@ pub fn decipher(tree: &DsTreeRef, rune: &mut dyn DsRune) {
                 if_node.get_condition(),
                 if_node.is_reactive(),
                 borrowed.get_children(),
+                borrowed.get_else_branch(),
             );
         }
         DsNode::Iter(iter_node) => {
@@ -45,6 +46,11 @@ pub fn decipher(tree: &DsTreeRef, rune: &mut dyn DsRune) {
                 match_node.is_reactive(),
                 match_node.get_arms(),
             );
+        }
+        DsNode::Else => {
+            for child in borrowed.get_children() {
+                decipher(child, rune);
+            }
         }
     }
 }

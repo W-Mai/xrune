@@ -22,8 +22,16 @@ pub trait DsRune {
     );
 
     /// Inscribe a conditional node. `reactive` is set by a `$` sigil on the
-    /// condition (`if $cond` / `if ${ expr }`).
-    fn inscribe_if(&mut self, condition: &syn::Expr, reactive: bool, children: &[DsTreeRef]);
+    /// condition (`if $cond` / `if ${ expr }`). `else_branch`, when present, is
+    /// either an `Else`-node tree (its children are the else-body) or an
+    /// `If`-node tree (`else if` recurses).
+    fn inscribe_if(
+        &mut self,
+        condition: &syn::Expr,
+        reactive: bool,
+        children: &[DsTreeRef],
+        else_branch: Option<&DsTreeRef>,
+    );
 
     /// Inscribe an iteration node.
     fn inscribe_iter(

@@ -26,6 +26,8 @@ pub struct DsTree {
     node: DsNode,
 
     children: Vec<DsTreeRef>,
+
+    else_branch: Option<DsTreeRef>,
 }
 
 impl DsTree {
@@ -40,6 +42,10 @@ impl DsTree {
     pub fn get_children(&self) -> &[DsTreeRef] {
         &self.children
     }
+
+    pub fn get_else_branch(&self) -> Option<&DsTreeRef> {
+        self.else_branch.as_ref()
+    }
 }
 
 impl Debug for DsTree {
@@ -53,6 +59,7 @@ impl Debug for DsTree {
                 DsNode::Iter(_) => "Iter",
                 DsNode::Niche(_) => "Niche",
                 DsNode::Match(_) => "Match",
+                DsNode::Else => "Else",
             },
         };
         f.write_fmt(format_args!(
@@ -80,6 +87,12 @@ impl Parse for DsTree {
             Vec::new()
         };
 
+        let else_branch = if matches!(node, DsNode::If(_)) {
+            parse_else_chain(input)?
+        } else {
+            None
+        };
+
         while DsOn::is_me(input) {
             let on_handler = input.parse::<DsOn>()?;
             match &mut node {
@@ -98,8 +111,49 @@ impl Parse for DsTree {
             parent: None,
             node,
             children,
+            else_branch,
         })
     }
+}
+
+fn parse_else_chain(input: ParseStream) -> syn::Result<Option<DsTreeRef>> {
+    use ds_custom_token::elif;
+
+    if input.peek(elif) {
+        input.parse::<elif>()?;
+        let (condition, reactive) = reactive::reactive_or_expr(input)?;
+        let content;
+        syn::braced!(content in input);
+        let children = parse_children_with_trailing_on(&content)?;
+        let else_branch = parse_else_chain(input)?;
+        let tree = DsTree {
+            parent: None,
+            node: DsNode::If(ds_if::DsIf::synthetic(condition, reactive)),
+            children,
+            else_branch,
+        }
+        .into_ref();
+        tree.borrow_mut().set_parent(tree.clone());
+        return Ok(Some(tree));
+    }
+
+    if input.peek(syn::Token![else]) {
+        input.parse::<syn::Token![else]>()?;
+        let content;
+        syn::braced!(content in input);
+        let children = parse_children_with_trailing_on(&content)?;
+        let tree = DsTree {
+            parent: None,
+            node: DsNode::Else,
+            children,
+            else_branch: None,
+        }
+        .into_ref();
+        tree.borrow_mut().set_parent(tree.clone());
+        return Ok(Some(tree));
+    }
+
+    Ok(None)
 }
 
 pub(crate) fn parse_children_with_trailing_on(input: ParseStream) -> syn::Result<Vec<DsTreeRef>> {

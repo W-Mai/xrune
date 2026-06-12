@@ -79,6 +79,7 @@ impl DsRune for DefaultRune {
         condition: &syn::Expr,
         _reactive: bool,
         children: &[xrune_nexus::ds_node::DsTreeRef],
+        else_branch: Option<&xrune_nexus::ds_node::DsTreeRef>,
     ) {
         use quote::quote;
         let con = quote!(#condition).to_string();
@@ -91,6 +92,9 @@ impl DsRune for DefaultRune {
         self.tokens.extend(quote! {
             println!("}}");
         });
+        if let Some(branch) = else_branch {
+            decipher(branch, self);
+        }
     }
 
     fn inscribe_iter(

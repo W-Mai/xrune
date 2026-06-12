@@ -78,7 +78,13 @@ impl DsRune for DefaultRune {
         self.parent_name = prev_parent;
     }
 
-    fn inscribe_if(&mut self, condition: &syn::Expr, _reactive: bool, children: &[DsTreeRef]) {
+    fn inscribe_if(
+        &mut self,
+        condition: &syn::Expr,
+        _reactive: bool,
+        children: &[DsTreeRef],
+        else_branch: Option<&DsTreeRef>,
+    ) {
         let con = quote!(#condition).to_string();
         self.tokens.extend(quote! {
             println!("if {} {{", #con);
@@ -91,6 +97,10 @@ impl DsRune for DefaultRune {
         self.tokens.extend(quote! {
             println!("}}");
         });
+
+        if let Some(branch) = else_branch {
+            decipher(branch, self);
+        }
     }
 
     fn inscribe_iter(

@@ -91,6 +91,7 @@ impl Parse for DsRoot {
                     parent: None,
                     node: DsNode::Root(parent),
                     children: vec![],
+                    else_branch: None,
                 }
                 .into_ref(),
             );

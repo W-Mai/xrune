@@ -24,6 +24,7 @@ pub enum DsNode {
     Iter(DsIter),
     Niche(DsNiche),
     Match(DsMatch),
+    Else,
 }
 
 impl Debug for DsNode {
@@ -35,6 +36,7 @@ impl Debug for DsNode {
             DsNode::Iter(iter) => write!(f, "Iter({iter:?})"),
             DsNode::Niche(niche) => write!(f, "Niche({niche:?})"),
             DsNode::Match(match_node) => write!(f, "Match({match_node:?})"),
+            DsNode::Else => write!(f, "Else"),
         }
     }
 }

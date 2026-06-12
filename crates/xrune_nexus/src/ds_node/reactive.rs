@@ -1,8 +1,7 @@
 use syn::parse::ParseStream;
 
-/// Parse a control-flow head expression, detecting a leading `$` sigil.
-/// Returns the inner `syn::Expr` (with `$` stripped) and whether the sigil was
-/// present. `$expr` and `${ block }` set the flag; a bare expr does not.
+/// Parse a head expression, returning it with a leading `$` stripped and
+/// whether that `$` was present.
 pub fn reactive_or_expr(input: ParseStream) -> syn::Result<(syn::Expr, bool)> {
     if input.peek(syn::Token![$]) {
         input.parse::<syn::Token![$]>()?;

@@ -481,4 +481,90 @@ mod tests {
         let result = syn::parse2::<DsTree>(tokens);
         assert!(result.is_err(), "multi-segment qualifier must fail",);
     }
+
+    #[test]
+    fn parse_if_else() {
+        let tokens = quote! {
+            if cond {
+                a (height: 10) {}
+            } else {
+                b (height: 20) {}
+            }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        let else_b = tree.get_else_branch().expect("else branch present");
+        assert!(
+            matches!(else_b.borrow().get_node(), DsNode::Else),
+            "terminal else is an Else node",
+        );
+    }
+
+    #[test]
+    fn parse_if_elif_else_chain() {
+        let tokens = quote! {
+            if a {
+                x (height: 10) {}
+            } elif b {
+                y (height: 10) {}
+            } else {
+                z (height: 10) {}
+            }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        // elif is a nested If node carrying its own else (the terminal else)
+        let elif = tree.get_else_branch().expect("elif branch");
+        let elif_b = elif.borrow();
+        assert!(
+            matches!(elif_b.get_node(), DsNode::If(_)),
+            "elif is an If node"
+        );
+        let tail = elif_b.get_else_branch().expect("elif's else");
+        assert!(
+            matches!(tail.borrow().get_node(), DsNode::Else),
+            "chain ends in Else"
+        );
+    }
+
+    #[test]
+    fn parse_reactive_if() {
+        let tokens = quote! {
+            if $cond {
+                a (height: 10) {}
+            }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::If(n) => assert!(n.is_reactive(), "$ marks the if reactive"),
+            _ => panic!("expected If node"),
+        }
+    }
+
+    #[test]
+    fn parse_reactive_walk() {
+        let tokens = quote! {
+            walk $items with item {
+                a (height: 10) {}
+            }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Iter(n) => assert!(n.is_reactive(), "$ marks the walk reactive"),
+            _ => panic!("expected Iter node"),
+        }
+    }
+
+    #[test]
+    fn parse_reactive_match() {
+        let tokens = quote! {
+            match $state {
+                0 => { a (height: 10) {} }
+                _ => { b (height: 10) {} }
+            }
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Match(n) => assert!(n.is_reactive(), "$ marks the match reactive"),
+            _ => panic!("expected Match node"),
+        }
+    }
 }

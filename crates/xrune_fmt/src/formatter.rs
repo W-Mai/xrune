@@ -116,17 +116,30 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
         DsNode::If(if_node) => {
             out.push_str(indent);
             out.push_str("if ");
+            if if_node.is_reactive() {
+                out.push('$');
+            }
             out.push_str(&fmt_expr(if_node.get_condition()));
             out.push_str(" {\n");
             for child in borrowed.get_children() {
                 format_tree(child, &child_indent, out);
             }
             out.push_str(indent);
-            out.push_str("}\n");
+            out.push('}');
+            format_else_branch(borrowed.get_else_branch(), indent, out);
+            out.push('\n');
+        }
+        DsNode::Else => {
+            for child in borrowed.get_children() {
+                format_tree(child, &child_indent, out);
+            }
         }
         DsNode::Iter(iter_node) => {
             out.push_str(indent);
             out.push_str("walk ");
+            if iter_node.is_reactive() {
+                out.push('$');
+            }
             out.push_str(&fmt_expr(iter_node.get_iterable()));
             out.push_str(" with ");
             out.push_str(&iter_node.get_variable().to_string());
@@ -151,6 +164,9 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
         DsNode::Match(match_node) => {
             out.push_str(indent);
             out.push_str("match ");
+            if match_node.is_reactive() {
+                out.push('$');
+            }
             out.push_str(&fmt_expr(match_node.get_scrutinee()));
             out.push_str(" {\n");
             let arm_indent = format!("{child_indent}    ");
@@ -237,7 +253,39 @@ fn format_attrs(attrs: &[DsAttr], indent: &str, name_len: usize, out: &mut Strin
     }
 }
 
-/// Format a syn::Expr into pretty Rust code using prettyplease
+/// Append an `if`'s `elif`/`else` tail after its closing brace.
+fn format_else_branch(branch: Option<&DsTreeRef>, indent: &str, out: &mut String) {
+    let Some(branch) = branch else {
+        return;
+    };
+    let b = branch.borrow();
+    let child_indent = format!("{indent}    ");
+    match b.get_node() {
+        DsNode::If(if_node) => {
+            out.push_str(" elif ");
+            if if_node.is_reactive() {
+                out.push('$');
+            }
+            out.push_str(&fmt_expr(if_node.get_condition()));
+            out.push_str(" {\n");
+            for child in b.get_children() {
+                format_tree(child, &child_indent, out);
+            }
+            out.push_str(indent);
+            out.push('}');
+            format_else_branch(b.get_else_branch(), indent, out);
+        }
+        _ => {
+            out.push_str(" else {\n");
+            for child in b.get_children() {
+                format_tree(child, &child_indent, out);
+            }
+            out.push_str(indent);
+            out.push('}');
+        }
+    }
+}
+
 fn fmt_expr(expr: &syn::Expr) -> String {
     fmt_expr_indented(expr, "")
 }
@@ -472,5 +520,35 @@ world: world
             "second on must follow first close same line, got:
 {out}"
         );
+    }
+
+    #[test]
+    fn reactive_if_keeps_dollar() {
+        let out = fmt(&format!("{CTX}if $cond {{ Text (\"x\") {{}} }}\n"));
+        assert!(out.contains("if $cond"), "must keep $ sigil, got:\n{out}");
+    }
+
+    #[test]
+    fn reactive_walk_and_match_keep_dollar() {
+        let walk = fmt(&format!(
+            "{CTX}walk $items with item {{ Text (\"x\") {{}} }}\n"
+        ));
+        assert!(walk.contains("walk $items"), "walk keeps $, got:\n{walk}");
+        let m = fmt(&format!(
+            "{CTX}match $state {{ 0 => {{ Text (\"x\") {{}} }} _ => {{ Text (\"y\") {{}} }} }}\n"
+        ));
+        assert!(m.contains("match $state"), "match keeps $, got:\n{m}");
+    }
+
+    #[test]
+    fn if_elif_else_roundtrip() {
+        let out = fmt(&format!(
+            "{CTX}if a {{ Text (\"x\") {{}} }} elif b {{ Text (\"y\") {{}} }} else {{ Text (\"z\") {{}} }}\n"
+        ));
+        assert!(
+            out.contains("elif b"),
+            "keeps elif (not else if), got:\n{out}"
+        );
+        assert!(out.contains("} else {"), "keeps terminal else, got:\n{out}");
     }
 }

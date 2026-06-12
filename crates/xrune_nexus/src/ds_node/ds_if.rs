@@ -9,6 +9,13 @@ pub struct DsIf {
 }
 
 impl DsIf {
+    pub(crate) fn synthetic(condition: syn::Expr, reactive: bool) -> Self {
+        DsIf {
+            condition,
+            reactive,
+        }
+    }
+
     pub fn get_condition(&self) -> &syn::Expr {
         &self.condition
     }
