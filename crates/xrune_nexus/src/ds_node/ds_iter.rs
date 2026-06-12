@@ -7,6 +7,7 @@ use syn::parse::{Parse, ParseStream};
 pub struct DsIter {
     iterable: syn::Expr,
     variable: syn::Ident,
+    reactive: bool,
 }
 
 impl DsIter {
@@ -16,6 +17,10 @@ impl DsIter {
 
     pub fn get_variable(&self) -> &syn::Ident {
         &self.variable
+    }
+
+    pub fn is_reactive(&self) -> bool {
+        self.reactive
     }
 }
 
@@ -33,10 +38,18 @@ impl Debug for DsIter {
 impl Parse for DsIter {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         input.parse::<ds_custom_token::walk>()?;
+        let reactive = input.peek(syn::Token![$]);
+        if reactive {
+            input.parse::<syn::Token![$]>()?;
+        }
         let iterable = input.parse::<syn::Expr>()?;
         input.parse::<ds_custom_token::with>()?;
         let variable = input.parse::<syn::Ident>()?;
-        Ok(DsIter { iterable, variable })
+        Ok(DsIter {
+            iterable,
+            variable,
+            reactive,
+        })
     }
 }
 

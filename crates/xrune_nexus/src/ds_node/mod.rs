@@ -10,6 +10,7 @@ pub mod ds_root;
 pub mod ds_traits;
 pub mod ds_widget;
 pub mod node_enum;
+pub mod reactive;
 
 use std::fmt::{Debug, Formatter};
 use syn::parse::{Parse, ParseStream};

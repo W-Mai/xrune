@@ -74,7 +74,12 @@ impl DsRune for DefaultRune {
         self.parent_name = prev_parent;
     }
 
-    fn inscribe_if(&mut self, condition: &syn::Expr, children: &[xrune_nexus::ds_node::DsTreeRef]) {
+    fn inscribe_if(
+        &mut self,
+        condition: &syn::Expr,
+        _reactive: bool,
+        children: &[xrune_nexus::ds_node::DsTreeRef],
+    ) {
         use quote::quote;
         let con = quote!(#condition).to_string();
         self.tokens.extend(quote! {
@@ -92,6 +97,7 @@ impl DsRune for DefaultRune {
         &mut self,
         iterable: &syn::Expr,
         variable: &syn::Ident,
+        _reactive: bool,
         children: &[xrune_nexus::ds_node::DsTreeRef],
     ) {
         use quote::quote;
@@ -125,6 +131,7 @@ impl DsRune for DefaultRune {
     fn inscribe_match(
         &mut self,
         scrutinee: &syn::Expr,
+        _reactive: bool,
         arms: &[xrune_nexus::ds_node::ds_match::DsMatchArm],
     ) {
         use quote::quote;

@@ -21,12 +21,17 @@ impl DsMatchArm {
 
 pub struct DsMatch {
     scrutinee: syn::Expr,
+    reactive: bool,
     arms: Vec<DsMatchArm>,
 }
 
 impl DsMatch {
     pub fn get_scrutinee(&self) -> &syn::Expr {
         &self.scrutinee
+    }
+
+    pub fn is_reactive(&self) -> bool {
+        self.reactive
     }
 
     pub fn get_arms(&self) -> &[DsMatchArm] {
@@ -43,7 +48,7 @@ impl Debug for DsMatch {
 impl Parse for DsMatch {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         input.parse::<syn::Token![match]>()?;
-        let scrutinee: syn::Expr = parse_scrutinee(input)?;
+        let (scrutinee, reactive) = super::reactive::reactive_or_expr(input)?;
 
         let body;
         syn::braced!(body in input);
@@ -70,7 +75,11 @@ impl Parse for DsMatch {
             }
         }
 
-        Ok(DsMatch { scrutinee, arms })
+        Ok(DsMatch {
+            scrutinee,
+            reactive,
+            arms,
+        })
     }
 }
 
@@ -78,13 +87,4 @@ impl DsNodeIsMe for DsMatch {
     fn is_me(input: ParseStream) -> bool {
         input.peek(syn::Token![match])
     }
-}
-
-fn parse_scrutinee(input: ParseStream) -> syn::Result<syn::Expr> {
-    let mut tokens = proc_macro2::TokenStream::new();
-    while !input.is_empty() && !input.peek(syn::token::Brace) {
-        let tt: proc_macro2::TokenTree = input.parse()?;
-        tokens.extend(std::iter::once(tt));
-    }
-    syn::parse2(tokens)
 }

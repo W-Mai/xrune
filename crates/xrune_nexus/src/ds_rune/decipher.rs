@@ -22,12 +22,17 @@ pub fn decipher(tree: &DsTreeRef, rune: &mut dyn DsRune) {
             );
         }
         DsNode::If(if_node) => {
-            rune.inscribe_if(if_node.get_condition(), borrowed.get_children());
+            rune.inscribe_if(
+                if_node.get_condition(),
+                if_node.is_reactive(),
+                borrowed.get_children(),
+            );
         }
         DsNode::Iter(iter_node) => {
             rune.inscribe_iter(
                 iter_node.get_iterable(),
                 iter_node.get_variable(),
+                iter_node.is_reactive(),
                 borrowed.get_children(),
             );
         }
@@ -35,7 +40,11 @@ pub fn decipher(tree: &DsTreeRef, rune: &mut dyn DsRune) {
             rune.inscribe_niche(niche_node.get_name(), borrowed.get_children());
         }
         DsNode::Match(match_node) => {
-            rune.inscribe_match(match_node.get_scrutinee(), match_node.get_arms());
+            rune.inscribe_match(
+                match_node.get_scrutinee(),
+                match_node.is_reactive(),
+                match_node.get_arms(),
+            );
         }
     }
 }
