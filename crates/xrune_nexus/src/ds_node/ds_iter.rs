@@ -38,11 +38,7 @@ impl Debug for DsIter {
 impl Parse for DsIter {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         input.parse::<ds_custom_token::walk>()?;
-        let reactive = input.peek(syn::Token![$]);
-        if reactive {
-            input.parse::<syn::Token![$]>()?;
-        }
-        let iterable = input.parse::<syn::Expr>()?;
+        let (iterable, reactive) = super::reactive::reactive_attr_or_expr(input)?;
         input.parse::<ds_custom_token::with>()?;
         let variable = input.parse::<syn::Ident>()?;
         Ok(DsIter {

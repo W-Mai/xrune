@@ -221,7 +221,8 @@ fn format_attrs(attrs: &[DsAttr], indent: &str, name_len: usize, out: &mut Strin
     let attr_strs: Vec<String> = attrs
         .iter()
         .map(|attr| {
-            let value = fmt_expr_indented(&attr.value, &attr_indent);
+            let sigil = if attr.reactive { "$" } else { "" };
+            let value = format!("{sigil}{}", fmt_expr_indented(&attr.value, &attr_indent));
             match &attr.name {
                 Some(n) => format!("{n}: {value}"),
                 None => value,
@@ -550,5 +551,32 @@ world: world
             "keeps elif (not else if), got:\n{out}"
         );
         assert!(out.contains("} else {"), "keeps terminal else, got:\n{out}");
+    }
+
+    #[test]
+    fn reactive_attr_keeps_dollar() {
+        let path = fmt(&format!("{CTX}View (bg_color: $signal) {{}}\n"));
+        assert!(
+            path.contains("bg_color: $signal"),
+            "bare $path attr keeps $, got:\n{path}"
+        );
+        let block = fmt(&format!(
+            "{CTX}View (bg_color: ${{ pick(x.get()) }}) {{}}\n"
+        ));
+        assert!(
+            block.contains("bg_color: ${"),
+            "${{block}} attr keeps $ with no gap, got:\n{block}"
+        );
+    }
+
+    #[test]
+    fn reactive_walk_block_keeps_dollar() {
+        let out = fmt(&format!(
+            "{CTX}walk ${{ rows.iter() }} with item {{ Text (\"x\") {{}} }}\n"
+        ));
+        assert!(
+            out.contains("walk ${"),
+            "walk ${{block}} keeps $ with no gap, got:\n{out}"
+        );
     }
 }

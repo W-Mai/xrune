@@ -567,4 +567,21 @@ mod tests {
             _ => panic!("expected Match node"),
         }
     }
+
+    #[test]
+    fn parse_reactive_attr() {
+        let tokens = quote! {
+            a (bg_color: $signal, width: ${ pick(x.get()) }, height: 10) {}
+        };
+        let tree: DsTree = syn::parse2(tokens).unwrap();
+        match tree.get_node() {
+            DsNode::Widget(w) => {
+                let attrs = &w.get_attrs().attrs;
+                assert!(attrs[0].reactive, "$path attr is reactive");
+                assert!(attrs[1].reactive, "${{block}} attr is reactive");
+                assert!(!attrs[2].reactive, "bare attr is not reactive");
+            }
+            _ => panic!("expected Widget node"),
+        }
+    }
 }

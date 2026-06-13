@@ -5,6 +5,7 @@ use syn::parse::{Parse, ParseStream};
 pub struct DsAttr {
     pub name: Option<syn::Ident>,
     pub value: syn::Expr,
+    pub reactive: bool,
 }
 
 impl DsAttr {
@@ -15,7 +16,7 @@ impl DsAttr {
 
 impl Debug for DsAttr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let DsAttr { name, value } = self;
+        let DsAttr { name, value, .. } = self;
         let name_repr = match name {
             Some(n) => n.to_string(),
             None => "<positional>".to_string(),
@@ -39,14 +40,19 @@ impl Parse for DsAttr {
         if input.peek(syn::Ident) && input.peek2(syn::Token![:]) {
             let name = input.parse::<syn::Ident>()?;
             input.parse::<syn::Token![:]>()?;
-            let value = input.parse::<syn::Expr>()?;
+            let (value, reactive) = super::reactive::reactive_attr_or_expr(input)?;
             Ok(DsAttr {
                 name: Some(name),
                 value,
+                reactive,
             })
         } else {
-            let value = input.parse::<syn::Expr>()?;
-            Ok(DsAttr { name: None, value })
+            let (value, reactive) = super::reactive::reactive_attr_or_expr(input)?;
+            Ok(DsAttr {
+                name: None,
+                value,
+                reactive,
+            })
         }
     }
 }
@@ -72,7 +78,7 @@ impl Parse for DsAttrs {
 
 impl ToTokens for DsAttr {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let DsAttr { name, value } = self;
+        let DsAttr { name, value, .. } = self;
         let name_string = match name {
             Some(n) => n.to_string(),
             None => "<positional>".to_string(),
