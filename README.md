@@ -24,8 +24,9 @@ A declarative UI DSL proc macro framework with pluggable code generation backend
 - Attribute expressions (any valid Rust expression as value)
 - Enchants — attach arbitrary data to nodes via `[expr, ...]` syntax
 - Context area with arbitrary key-value pairs
-- Conditional rendering (`if`)
+- Conditional rendering (`if` / `elif` / `else`)
 - Iteration (`walk ... with ...`)
+- Reactive control flow via the `$` sigil (`if $cond`, `match $expr`, `walk $items`)
 - Pluggable codegen via `DsRune` trait — bring your own backend
 
 ## Syntax
@@ -130,18 +131,30 @@ impl DsRune for MyRune {
         children: &[DsTreeRef],
     ) { /* ... */ }
 
-    fn inscribe_if(&mut self, condition: &syn::Expr, children: &[DsTreeRef]) { /* ... */ }
+    fn inscribe_if(
+        &mut self,
+        condition: &syn::Expr,
+        reactive: bool,             // `if $cond` sets this
+        children: &[DsTreeRef],
+        else_branch: Option<&DsTreeRef>,  // `elif` (nested If) / `else` (Else node)
+    ) { /* ... */ }
 
     fn inscribe_iter(
         &mut self,
         iterable: &syn::Expr,
         variable: &syn::Ident,
+        reactive: bool,             // `walk $items` sets this
         children: &[DsTreeRef],
     ) { /* ... */ }
 
     fn inscribe_niche(&mut self, name: &syn::Ident, children: &[DsTreeRef]) { /* ... */ }
 
-    fn inscribe_match(&mut self, scrutinee: &syn::Expr, arms: &[DsMatchArm]) { /* ... */ }
+    fn inscribe_match(
+        &mut self,
+        scrutinee: &syn::Expr,
+        reactive: bool,             // `match $expr` sets this
+        arms: &[DsMatchArm],
+    ) { /* ... */ }
 
     fn seal(self) -> proc_macro2::TokenStream { /* ... */ }
 }

@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.7.0] - 2026-06-13
+
+### Added
+
+- **`$` sigil marks reactive control flow** — a leading `$` on an `if` condition (`if $cond { ... }`), a `match` scrutinee (`match $expr { ... }`), or a `walk` iterable (`walk $items with item { ... }`) sets a `reactive` flag on the node, exposed via `is_reactive()`. The `$` is stripped during parsing; bare `if cond { ... }` is unchanged and stays non-reactive. `DsRune::inscribe_if`, `inscribe_iter`, and `inscribe_match` receive the flag so backends can decide whether to wrap the branch in a reactive scope.
+- **`if` / `elif` / `else` branches** — `if` now accepts an optional `elif <cond> { ... }` chain (`elif` is a single keyword, not `else if`) and a terminal `else { ... }`. `DsTree` carries the chain through `else_branch: Option<DsTreeRef>`; `elif` parses as a nested `If` node and `else` as a `DsNode::Else` node whose body lives in its children. `DsRune::inscribe_if` gains an `else_branch` parameter.
+
+### Changed
+
+- **`xrune-fmt` round-trips `$`, `elif`, and `else`** — the formatter preserves the reactive `$` on `if` / `walk` / `match`, emits `elif` (not `else if`), and reproduces the terminal `else`.
+
 ## [1.6.0] - 2026-06-10
 
 ### Changed
