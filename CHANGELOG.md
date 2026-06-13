@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.8.0] - 2026-06-14
+
+### Added
+
+- **`$` sigil on attribute values** — an attribute value accepts the same reactive sigil as control flow: `attr: $signal` (a bare path) and `attr: ${ expr }` (a block) set a `reactive: bool` flag on `DsAttr`, exposed to codegen backends. Without `$` the value parses as a plain expression and stays non-reactive. The `$` is stripped during parsing.
+- **`walk ${ block }`** — `walk` now accepts a block iterable (`walk ${ rows.iter() } with item { ... }`) in addition to a bare `walk $items with item { ... }`, matching the `if` / `match` heads.
+
+### Changed
+
+- **`xrune-fmt` round-trips `$` on attributes** — the formatter preserves `attr: $signal` and `attr: ${ block }`, with no gap between `$` and the brace.
+
 ## [1.7.0] - 2026-06-13
 
 ### Added

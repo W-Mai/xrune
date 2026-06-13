@@ -26,7 +26,7 @@ A declarative UI DSL proc macro framework with pluggable code generation backend
 - Context area with arbitrary key-value pairs
 - Conditional rendering (`if` / `elif` / `else`)
 - Iteration (`walk ... with ...`)
-- Reactive control flow via the `$` sigil (`if $cond`, `match $expr`, `walk $items`)
+- Reactive `$` sigil on control flow and attributes (`if $cond`, `match $expr`, `walk $items`, `attr: $signal` / `attr: ${ expr }`)
 - Pluggable codegen via `DsRune` trait — bring your own backend
 
 ## Syntax
