@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **Widget event formatting.** Children precede event clauses, preserving callback arguments, event-body presence, handler order, and nested widget ownership when formatted code is parsed again.
+
 ## [1.10.0] - 2026-07-03
 
 ### Added

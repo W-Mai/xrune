@@ -24,11 +24,29 @@ xrune-fmt src/app.rs --check    # 未格式化则退出码 1，文件不动
 
 - **上下文头**始终多行，每属性独占一行，缩进比 `ui!` 大括号多一级。
 - **部件属性**：单行能装下且 ≤ `MAX_LINE_WIDTH = 100` 时单行；否则每属性独占一行。原文已经多行的，即便重排后单行也能装下，誊章仍保持多行，作者意图优先于列宽。
-- **属性值、`walk` 可迭代、`if`/`match` scrutinee、`on` body** 一律走 `prettyplease`，让嵌入的 Rust 表达式按规范形态渲染。
-- **`on EventKind` 子句**叠在属性与 body 之间，body 缩进比外层部件多一级。
+- **属性值、`walk` 可迭代、`if`/`match` 匹配表达式、`on` 事件体**按 Rust 格式排版，保留内部层级缩进。
+- **`on EventKind` 子句**按声明顺序放在部件的子节点块后。没有子节点时，放在属性或附魔后。事件体保留自己的大括号，包括空事件体；回调形式不添加事件体。
 - **附魔**坐落在属性与 body 之间，写在 `[ … ]`，逗号分隔。
 
-誊章能 round-trip 的形态，跟 `xrune-nexus::tests` 验过的一样齐全：位置属性、具名属性、无 body 的部件、壁龛、match arm、三种 `on` 形态（B、C、回调）。`xrune-fmt` 自己的测试集走遍 `examples/example0/src/ui` 每个 fixture，确认幂等。
+```rust
+# use xrune::ui;
+# fn handler() {}
+# fn app(parent: i32) {
+# ui! {
+#     :(
+#         parent: parent
+#     :)
+Panel () {
+    Text ("child")
+} on Tap(handler)
+# }
+# }
+# fn main() {}
+```
+
+格式器将子节点块放在事件后缀之前。紧跟 `on Tap(handler)` 的大括号属于事件体，不是部件的子节点。
+
+格式化保留部件属性、附魔、事件处理器和子节点的结构。对已格式化的代码再次格式化，输出不变。
 
 ## 为什么单独养一个跟随 parser 形态的消费者
 

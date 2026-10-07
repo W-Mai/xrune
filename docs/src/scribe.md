@@ -36,18 +36,29 @@ preserved byte-for-byte.
   `MAX_LINE_WIDTH = 100`; otherwise each attr goes on its own line. If
   the original was multi-line, the scribe keeps it multi-line even when
   it would now fit on one — author intent wins over column count.
-- **Attribute values, `walk` iterables, `if`/`match` scrutinees, and
-  `on` bodies** all run through `prettyplease` so embedded Rust
-  expressions render in canonical form.
-- **`on EventKind` clauses** stack between attrs and body; their bodies
-  are indented one step beyond the surrounding widget.
+- **Attribute values, `walk` iterables, `if`/`match` scrutinees, and `on` bodies** use Rust formatting with nested indentation.
+- **`on EventKind` clauses** follow the widget's children block in declaration order. When there are no children, they follow the attrs or enchants. Handler bodies retain their own braces, including empty bodies; callback-form handlers remain bodyless.
 - **Enchants** sit between attrs and body in `[ … ]`, comma-separated.
 
-The scribe round-trips the same forms `xrune-nexus::tests` exercises —
-positional attrs, named attrs, headerless widgets, niches, match arms,
-the three `on` shapes (Form B, Form C, callback). The `xrune-fmt`
-test suite walks every fixture in `examples/example0/src/ui` to
-confirm idempotence.
+```rust
+# use xrune::ui;
+# fn handler() {}
+# fn app(parent: i32) {
+# ui! {
+#     :(
+#         parent: parent
+#     :)
+Panel () {
+    Text ("child")
+} on Tap(handler)
+# }
+# }
+# fn main() {}
+```
+
+The formatter places the children block before event clauses. Braces immediately after `on Tap(handler)` are the handler's event body, not widget children.
+
+Formatting preserves widget attributes, enchants, event handlers, and child relationships. Formatting an already formatted block produces identical output.
 
 ## Why a separate parser-shaped consumer
 

@@ -67,6 +67,16 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
                 out.push(']');
             }
 
+            let children = borrowed.get_children();
+            if !children.is_empty() {
+                out.push_str(" {\n");
+                for child in children {
+                    format_tree(child, &child_indent, out);
+                }
+                out.push_str(indent);
+                out.push('}');
+            }
+
             for on in widget.get_on_handlers() {
                 out.push(' ');
                 out.push_str("on ");
@@ -92,27 +102,7 @@ fn format_tree(tree: &DsTreeRef, indent: &str, out: &mut String) {
                 }
             }
 
-            let children = borrowed.get_children();
-            let has_on = !widget.get_on_handlers().is_empty();
-            if children.is_empty() {
-                out.push('\n');
-            } else if has_on {
-                out.push('\n');
-                out.push_str(indent);
-                out.push_str("{\n");
-                for child in children {
-                    format_tree(child, &child_indent, out);
-                }
-                out.push_str(indent);
-                out.push_str("}\n");
-            } else {
-                out.push_str(" {\n");
-                for child in children {
-                    format_tree(child, &child_indent, out);
-                }
-                out.push_str(indent);
-                out.push_str("}\n");
-            }
+            out.push('\n');
         }
         DsNode::If(if_node) => {
             out.push_str(indent);
@@ -435,6 +425,98 @@ world: world
 :)
 
 ";
+
+    #[derive(Debug, PartialEq, Eq)]
+    struct WidgetShape {
+        name: String,
+        attrs: Vec<(Option<String>, String, bool)>,
+        enchants: Vec<String>,
+        handlers: Vec<HandlerShape>,
+        children: Vec<WidgetShape>,
+    }
+
+    #[derive(Debug, PartialEq, Eq)]
+    struct HandlerShape {
+        qualifier: Option<String>,
+        name: String,
+        args: Vec<String>,
+        body: Option<String>,
+    }
+
+    fn widget_shape(tree: &DsTreeRef) -> WidgetShape {
+        let tree = tree.borrow();
+        let DsNode::Widget(widget) = tree.get_node() else {
+            panic!("expected a widget");
+        };
+        WidgetShape {
+            name: widget.get_name().to_string(),
+            attrs: widget
+                .get_attrs()
+                .attrs
+                .iter()
+                .map(|attr| {
+                    (
+                        attr.name.as_ref().map(ToString::to_string),
+                        attr.value.to_token_stream().to_string(),
+                        attr.reactive,
+                    )
+                })
+                .collect(),
+            enchants: widget
+                .get_enchants()
+                .iter()
+                .map(|expr| expr.to_token_stream().to_string())
+                .collect(),
+            handlers: widget
+                .get_on_handlers()
+                .iter()
+                .map(|handler| HandlerShape {
+                    qualifier: handler.get_qualifier().map(ToString::to_string),
+                    name: handler.get_name().to_string(),
+                    args: handler
+                        .get_args()
+                        .iter()
+                        .map(|arg| arg.to_token_stream().to_string())
+                        .collect(),
+                    body: handler
+                        .get_body()
+                        .map(|body| body.to_token_stream().to_string()),
+                })
+                .collect(),
+            children: tree.get_children().iter().map(widget_shape).collect(),
+        }
+    }
+
+    fn widget_shape_from_source(source: &str) -> WidgetShape {
+        let root: DsRoot = syn::parse_str(source).expect("valid DSL");
+        widget_shape(&root.get_content())
+    }
+
+    #[test]
+    fn widget_events_and_children_preserve_semantics_and_formatting_is_idempotent() {
+        for source in [
+            "View () { Text (\"child\") } on Tap(handler)",
+            "View () { Text (\"child\") } on Tap(2, |event| handler(event))",
+            "View (width: 120, left: $offset) [Marker] { Text (\"child\") } on Pad::Hit(handler)",
+            "View () on Tap { first(); } { Text (\"child\") } on Tap(2, second) on DragEnd { third(); }",
+            "View () { Text (\"child\") } on Tap(first) on DragMove { second(); } on DragEnd(third)",
+            "View () on Tap { first(); } { Text (\"child\") }",
+            "View () { Text (\"child\") } on Tap { first(); }",
+            "View () on Tap(handler)",
+            "View () {} on Tap(handler)",
+            "View () on Tap {}",
+            "Stage () { Column () { View () { Text (\"child\") } on Tap(child) Text (\"sibling\") } on Tap(parent) Text (\"outside\") }",
+        ] {
+            let before = widget_shape_from_source(source);
+            let formatted = fmt(source);
+            assert_eq!(
+                widget_shape_from_source(&formatted),
+                before,
+                "{source}\n{formatted}"
+            );
+            assert_eq!(fmt(&formatted), formatted, "{source}");
+        }
+    }
 
     #[test]
     fn empty_header_produces_no_context_block() {
