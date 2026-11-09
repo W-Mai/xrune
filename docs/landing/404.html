@@ -5,278 +5,82 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A Lost Casting · 404 · xrune</title>
 <meta name="description" content="This page is not inscribed in the grimoire.">
+<meta name="theme-color" content="#120e09">
 
 <meta property="og:title" content="A Lost Casting · 404 · xrune">
 <meta property="og:description" content="This page is not inscribed in the grimoire. The rite that summoned it has been resealed.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://xrune.to01.icu/og-card.png">
+<meta property="og:image" content="https://xrune.to01.icu/og-card.jpg">
 <meta property="og:url" content="https://xrune.to01.icu/404.html">
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" href="/favicon.png">
-
+<!-- GitHub Pages serves this file for any missing path, so every URL is absolute -->
+<link rel="stylesheet" href="/landing.css">
 <style>
-@font-face {
-  font-family: "Cardo";
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/cardo-regular.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Cardo";
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/cardo-bold.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Cinzel Decorative";
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/cinzeldecorative-regular.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Cinzel Decorative";
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/cinzeldecorative-bold.woff2") format("woff2");
-}
-@font-face {
-  font-family: "JetBrains Mono";
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/jetbrains-mono-regular.woff2") format("woff2");
-}
+.lost { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 56px 24px; text-align: center; }
+.lost-main { max-width: 660px; }
 
-:root {
-  --bg: #1c160f;
-  --fg: #e8d9b8;
-  --muted: #bba47a;
-  --gold: #c5a253;
-  --gold-bright: #e0bf6d;
-  --rubric: #a23a2c;
-  --shadow: #3a2f1d;
-  --panel: #15110b;
-  --panel-2: #0f0c08;
-}
+/* the seal of the rite that summoned this URL, broken; light leaks through */
+.lost-seal { width: 150px; margin: 0 auto 30px; filter: drop-shadow(0 18px 22px rgba(0, 0, 0, .75)); }
+.lost-seal svg { display: block; width: 100%; height: auto; overflow: visible; }
+.lost-seal .half { transform-box: view-box; transform-origin: 60px 96px; }
+.lost-seal .half.l { transform: translate(-2px, 1px) rotate(-5deg); animation: lost-join 1.5s var(--ease) .35s both; }
+.lost-seal .half.r { transform: translate(2px, 0) rotate(5deg); animation: lost-join 1.5s var(--ease) .35s both; }
+.lost-seal .leak { mix-blend-mode: screen; animation: lost-leak 1.8s ease .55s both; }
+.lost-seal .crumb { animation: lost-crumb .9s cubic-bezier(.5, 0, .75, .45) .6s both; }
+@keyframes lost-join { from { transform: none; } }
+@keyframes lost-leak { from { opacity: 0; } }
+@keyframes lost-crumb { from { opacity: 0; transform: translateY(-16px); } }
 
-* { box-sizing: border-box; }
+.lost .kicker { justify-content: center; margin-bottom: 16px; }
+.lost h1 { margin: 0; font: 400 clamp(32px, 5.4vw, 48px)/1.12 var(--display); letter-spacing: .04em; animation: lost-ink 1.8s var(--ease) .2s both; }
+@keyframes lost-ink { from { background-size: 0% 100%, 100% 100%; } }
+.lost-zh { margin: 10px 0 28px; font: 700 19px/1.4 var(--cjk-serif); letter-spacing: .5em; text-indent: .5em; color: var(--gold); }
+.lost-lede { margin: 0 auto; max-width: 34em; font-size: 18px; line-height: 1.65; color: var(--fg); }
+.lost-lede[lang="zh-CN"] { margin: 10px auto 36px; font: 16px/1.85 var(--cjk-serif); letter-spacing: .04em; color: var(--muted); }
+.lost .cta { margin-bottom: 34px; }
+.lost-hint { margin: 0; font-size: 15px; line-height: 1.8; color: var(--faint); }
+.lost-hint span[lang="zh-CN"] { font-family: var(--cjk-serif); }
+kbd { padding: 1px 7px; font: 12px var(--mono); color: var(--gold-hi); background: rgba(8, 6, 4, .6); border: 1px solid rgba(201, 165, 86, .45); border-radius: 2px; }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: "Cardo", "Source Serif 4", Georgia, serif;
-  font-size: 17px;
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@media (max-width: 520px) {
+  .lost .cta { flex-direction: column; align-items: stretch; }
+  .lost .btn { justify-content: center; }
 }
-
-body {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse at top, rgba(197, 162, 83, 0.10), transparent 60%),
-    var(--bg);
-}
-
-/* faint gold runework drifting behind the panel, same pattern as the landing hero */
-.bg {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.12;
-  pointer-events: none;
-  -webkit-mask-image: radial-gradient(ellipse 58% 62% at center, rgba(0,0,0,0.14), black 90%);
-  mask-image: radial-gradient(ellipse 58% 62% at center, rgba(0,0,0,0.14), black 90%);
-}
-
-.scroll {
-  position: relative;
-  z-index: 1;
-  max-width: 620px;
-  width: 100%;
-  text-align: center;
-  padding: 8px 28px;
-  /* sink the centre so the background runework never cuts across the copy */
-  background: radial-gradient(ellipse 75% 70% at center, rgba(28,22,15,0.92) 30%, rgba(28,22,15,0.55) 65%, transparent 100%);
-}
-
-/* the broken sigil: 404 rendered as a struck rune */
-.glyph {
-  font-family: "Cinzel Decorative", "Cardo", serif;
-  font-weight: 700;
-  font-size: clamp(88px, 22vw, 168px);
-  line-height: 1;
-  letter-spacing: 0.06em;
-  color: var(--gold);
-  margin: 0;
-  text-shadow: 0 0 38px rgba(224, 191, 109, 0.16);
-}
-.glyph .crack {
-  color: var(--rubric);
-  text-shadow: 0 0 26px rgba(162, 58, 44, 0.30);
-}
-
-.rule {
-  margin: 24px auto 28px;
-  width: 220px;
-  max-width: 70%;
-  height: 1px;
-  border: none;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  position: relative;
-}
-.rule::after {
-  content: "\2756";
-  position: absolute;
-  top: -0.7em;
-  left: 50%;
-  transform: translateX(-50%);
-  color: var(--gold);
-  background: var(--bg);
-  padding: 0 0.5em;
-  font-size: 0.9rem;
-}
-
-.kicker {
-  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
-  font-size: 13px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--rubric);
-  margin: 0 0 10px;
-}
-
-h1 {
-  font-family: "Cinzel Decorative", "Cardo", serif;
-  font-weight: 400;
-  font-size: clamp(26px, 5vw, 38px);
-  letter-spacing: 0.04em;
-  color: var(--gold);
-  margin: 0 0 6px;
-}
-.title-zh {
-  font-family: "Cardo", serif;
-  font-size: clamp(17px, 3vw, 21px);
-  color: var(--gold-bright);
-  margin: 0 0 22px;
-  letter-spacing: 0.04em;
-}
-
-.lede {
-  color: var(--fg);
-  margin: 0 0 6px;
-}
-.lede-zh {
-  color: var(--muted);
-  font-style: italic;
-  margin: 0 0 32px;
-  font-size: 0.95em;
-}
-
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  margin-bottom: 30px;
-}
-.nav a {
-  display: inline-block;
-  padding: 10px 20px;
-  border-radius: 3px;
-  font-family: "Cinzel Decorative", "Cardo", serif;
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: var(--gold);
-  background: transparent;
-  border: 1px solid var(--gold);
-  transition: background 0.18s, color 0.18s, border-color 0.18s;
-}
-.nav a:hover, .nav a:focus {
-  background: rgba(197, 162, 83, 0.08);
-  color: var(--gold-bright);
-  border-color: var(--gold-bright);
-  outline: none;
-}
-.nav a.home {
-  background: var(--gold);
-  color: var(--bg);
-}
-.nav a.home:hover {
-  background: var(--gold-bright);
-  border-color: var(--gold-bright);
-  color: var(--bg);
-}
-
-.hint {
-  font-size: 14px;
-  color: var(--muted);
-  margin: 0;
-}
-.hint a {
-  color: var(--gold);
-  text-decoration: none;
-  border-bottom: 1px dotted var(--gold);
-  transition: color 0.2s, border-color 0.2s;
-}
-.hint a:hover {
-  color: var(--gold-bright);
-  border-bottom-color: var(--gold-bright);
-}
-kbd {
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 0.82em;
-  background: var(--panel-2);
-  color: #f4d99c;
-  padding: 0.1em 0.45em;
-  border: 1px solid var(--gold);
-  border-radius: 2px;
-}
-
-@media (max-width: 480px) {
-  .nav { flex-direction: column; gap: 10px; }
-  .nav a { width: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .lost *, .lost-seal * { animation: none !important; }
 }
 </style>
 </head>
 <body>
+<canvas id="embers" aria-hidden="true"></canvas>
 
-<img class="bg" src="/hero-pattern.svg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+<main class="lost">
+  <div class="lost-main">
+    <div class="lost-seal"><svg viewBox="0 0 120 128" role="img" aria-label="A broken wax seal"><defs><radialGradient id="lsWax" cx=".36" cy=".3" r=".8"><stop offset="0" stop-color="#d9644a"/><stop offset=".55" stop-color="#9a2e1d"/><stop offset="1" stop-color="#5a170d"/></radialGradient><radialGradient id="lsLeak"><stop offset="0" stop-color="#fff1c2"/><stop offset=".35" stop-color="#f0c266" stop-opacity=".75"/><stop offset="1" stop-color="#c9a556" stop-opacity="0"/></radialGradient><clipPath id="lsL"><path d="M0 0H61L58.5 14L56 25L63.5 37L55.5 53L63 68L57.5 84L60.5 112H0Z"/></clipPath><clipPath id="lsR"><path d="M120 0H61L58.5 14L56 25L63.5 37L55.5 53L63 68L57.5 84L60.5 112H120Z"/></clipPath><g id="lsSeal"><path d="M101.6 56.0L102.1 57.7L101.9 59.3L101.4 60.9L101.2 62.5L101.4 64.2L101.8 66.0L101.5 67.7L100.3 69.1L98.5 70.2L96.6 71.2L95.3 72.3L94.7 73.7L94.5 75.3L94.0 76.8L93.0 78.1L91.6 79.0L90.3 79.9L89.5 81.2L89.2 83.0L88.9 84.9L88.2 86.5L86.8 87.4L85.0 87.7L83.1 87.8L81.5 88.2L80.3 89.1L79.1 90.2L77.8 90.9L76.1 90.9L74.3 90.6L72.7 90.5L71.4 91.1L70.3 92.5L69.2 94.3L67.9 95.7L66.4 96.4L64.8 96.5L63.2 96.5L61.6 97.0L60.0 98.0L58.3 98.8L56.6 99.0L55.0 98.2L53.6 96.7L52.2 95.2L50.8 94.4L49.2 94.3L47.5 94.3L46.0 94.0L44.6 93.1L43.5 91.9L42.2 90.9L40.7 90.5L38.8 90.6L36.8 90.7L35.1 90.2L34.0 88.9L33.4 87.1L32.9 85.3L32.0 84.0L30.9 82.9L29.7 81.9L29.0 80.5L28.8 78.6L29.1 76.7L29.0 75.0L28.2 73.8L26.7 73.0L25.0 72.1L23.6 71.1L22.9 69.7L22.5 68.2L22.0 66.7L21.0 65.4L19.6 64.0L18.3 62.6L17.8 61.0L18.3 59.3L19.4 57.6L20.3 56.0L20.5 54.4L20.2 52.9L19.8 51.2L19.9 49.7L20.7 48.2L21.6 46.8L22.2 45.3L22.1 43.7L21.4 41.8L20.9 39.8L21.0 38.0L22.1 36.7L23.7 35.6L25.1 34.6L26.1 33.4L26.8 31.9L27.7 30.6L29.2 29.7L31.2 29.4L33.3 29.3L35.0 29.0L36.1 28.0L36.8 26.5L37.4 24.9L38.4 23.6L39.7 22.9L41.2 22.4L42.5 21.6L43.5 20.3L44.5 18.5L45.6 17.0L47.1 16.4L48.9 16.6L50.7 17.3L52.4 17.7L53.9 17.4L55.4 16.7L56.9 16.1L58.4 16.0L60.0 16.6L61.5 17.3L63.0 17.3L64.7 16.6L66.4 15.4L68.3 14.4L70.0 14.3L71.6 15.0L73.0 16.1L74.4 16.9L76.0 17.4L77.7 17.6L79.2 18.3L80.3 19.7L81.0 21.7L81.5 23.8L82.2 25.4L83.4 26.3L84.9 26.8L86.5 27.4L87.6 28.4L88.4 29.7L89.1 31.2L90.1 32.2L91.7 32.9L93.6 33.5L95.2 34.4L95.9 35.9L95.9 37.7L95.7 39.6L95.7 41.2L96.3 42.6L97.2 43.9L97.9 45.3L98.0 46.9L97.6 48.5L97.2 50.1L97.6 51.6L98.7 53.0L100.3 54.4L101.6 56.0Z" fill="url(#lsWax)"/><circle cx="60" cy="56" r="28" fill="none" stroke="#5a170d" stroke-width="2.4" opacity=".7"/><circle cx="60" cy="56" r="28" fill="none" stroke="#f08a6c" stroke-width=".9" opacity=".32" transform="translate(-.7 -.9)"/><path d="M51.0 41.0L69.0 71.0M69.0 41.0L51.0 71.0" fill="none" stroke="#4d130a" stroke-width="5" stroke-linecap="square"/><path d="M50.3 40.1L68.3 70.1M68.3 40.1L50.3 70.1" fill="none" stroke="#f3967a" stroke-width="1.2" stroke-linecap="square" opacity=".55"/><path d="M61 0L58.5 14L56 25L63.5 37L55.5 53L63 68L57.5 84L60.5 112" fill="none" stroke="#3a0c05" stroke-width="3.2" stroke-linejoin="round"/></g></defs><ellipse class="leak" cx="60" cy="40" rx="15" ry="44" fill="url(#lsLeak)"/><g class="half l" clip-path="url(#lsL)"><use href="#lsSeal"/></g><g class="half r" clip-path="url(#lsR)"><use href="#lsSeal"/></g><path class="crumb" d="M51 113l3.2-1.6 2 2.4-2.6 2z" fill="#8a2a1a"/><path class="crumb" d="M65.5 116.5l2.4-.6.8 2.2-2.6.6z" fill="#6e2014"/><path class="crumb" d="M58.5 121l1.8-1 1.2 1.6-1.9.9z" fill="#9a3420"/></svg></div>
 
-<main class="scroll">
-  <p class="glyph">4<span class="crack">0</span>4</p>
-  <hr class="rule">
+    <p class="kicker">404 · Not Found</p>
+    <h1 class="ink in">A Lost Casting</h1>
+    <p class="lost-zh" lang="zh-CN">一段失落的咒文</p>
 
-  <p class="kicker">404 · Not Found</p>
-  <h1>A Lost Casting</h1>
-  <p class="title-zh">一段失落的咒文</p>
+    <p class="lost-lede">This page is not inscribed in the grimoire &mdash; either it was never written, or the rite that summoned this URL has since been resealed.</p>
+    <p class="lost-lede" lang="zh-CN">此页未录于典籍。或它从未写就，或召请此 URL 的咒语早已重新封印。</p>
 
-  <p class="lede">This page is not inscribed in the grimoire &mdash; either it was never written, or the rite that summoned this URL has since been resealed.</p>
-  <p class="lede-zh">此页未录于典籍。或它从未写就，或召请此 URL 的咒语早已重新封印。</p>
+    <nav class="cta" aria-label="Site sections">
+      <a class="btn btn-gold" href="/">Home · <span lang="zh-CN">首页</span></a>
+      <a class="btn btn-ghost" href="/book/">Docs</a>
+      <a class="btn btn-ghost" href="/book/zh-CN/" lang="zh-CN">中文文档</a>
+      <a class="btn btn-ghost" href="https://github.com/W-Mai/xrune">GitHub</a>
+    </nav>
 
-  <nav class="nav" aria-label="Site sections">
-    <a class="home" href="/">Home · 首页</a>
-    <a href="/book/">Docs (EN)</a>
-    <a href="/book/zh-CN/">文档 (中文)</a>
-    <a href="https://github.com/W-Mai/xrune">GitHub</a>
-  </nav>
-
-  <p class="hint">Seeking something by name? Open the <a href="/book/">grimoire</a> and press <kbd>s</kbd> to search. · 想按名查找？翻开<a href="/book/zh-CN/">魔典</a>，按 <kbd>s</kbd> 检索。</p>
+    <p class="lost-hint">Seeking something by name? Open the <a href="/book/">grimoire</a> and press <kbd>s</kbd> to search.<br>
+      <span lang="zh-CN">想按名查找？翻开<a href="/book/zh-CN/">魔典</a>，按 <kbd>s</kbd> 检索。</span></p>
+  </div>
 </main>
 
+<script src="/runes.js"></script>
+<script src="/embers.js" defer></script>
 </body>
 </html>

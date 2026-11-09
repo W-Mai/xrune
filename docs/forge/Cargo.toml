@@ -1,0 +1,28 @@
+[workspace]
+
+[package]
+name = "xrune-forge"
+version = "1.10.1"
+edition = "2024"
+license = "MIT"
+publish = false
+description = "The Forge: the real xrune parser, decipher walk and runes, compiled to WebAssembly for the Grimoire's in-browser playground"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[dependencies]
+xrune = { path = "../../crates/xrune" }
+xrune-nexus = { path = "../../crates/xrune_nexus" }
+syn = { version = "2", features = ["full", "parsing", "printing"] }
+quote = "1"
+proc-macro2 = { version = "1", features = ["span-locations"] }
+prettyplease = "0.2"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

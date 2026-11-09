@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      # the Forge compiles the crates themselves; keep it in step with them
+      - "crates/**"
+      - "xtask/**"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
@@ -23,7 +26,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            . -> target
+            docs/forge -> target
 
       - name: Install mdbook
         uses: taiki-e/cache-cargo-install-action@v2
@@ -32,23 +41,10 @@ jobs:
         uses: taiki-e/cache-cargo-install-action@v2
         with: { tool: mdbook-mermaid }
 
-      - name: Copy landing page + fonts to pages/
-        run: |
-          mkdir -p "$GITHUB_WORKSPACE/pages/fonts"
-          cp -r docs/landing/. "$GITHUB_WORKSPACE/pages/"
-          cp docs/theme/fonts/*.woff2 "$GITHUB_WORKSPACE/pages/fonts/"
-
-      - name: Build EN tree
-        env:
-          MDBOOK_OUTPUT__HTML__SITE_URL: /book/
-        run: mdbook build docs -d "$GITHUB_WORKSPACE/pages/book"
-
-      - name: Build zh-CN tree
-        env:
-          MDBOOK_BOOK__SRC: src-zh-CN
-          MDBOOK_BOOK__LANGUAGE: zh-CN
-          MDBOOK_OUTPUT__HTML__SITE_URL: /book/zh-CN/
-        run: mdbook build docs -d "$GITHUB_WORKSPACE/pages/book/zh-CN"
+      # Landing page + fonts, the Forge (the parser as wasm) and both
+      # mdBook trees. Run the same command locally to preview the site.
+      - name: Assemble the site
+        run: cargo xtask site --out pages --book
 
       - name: Install Pagefind
         run: |
@@ -56,8 +52,6 @@ jobs:
             | tar -xz -C /usr/local/bin
       - run: pagefind --site pages/book
       - run: pagefind --site pages/book/zh-CN
-
-      - run: touch pages/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
         with:

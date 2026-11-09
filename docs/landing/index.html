@@ -1,148 +1,457 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>xrune · The Grimoire</title>
-<meta name="description" content="A declarative UI DSL proc-macro framework with pluggable code-generation backends.">
+<meta name="description" content="xrune is a declarative UI DSL proc-macro framework for Rust. Parse once, inscribe anything: bind your own DsRune backend. Try the real parser in your browser.">
+<meta name="theme-color" content="#120e09">
 
 <meta property="og:title" content="xrune · The Grimoire">
-<meta property="og:description" content="A declarative UI DSL proc-macro framework with pluggable code-generation backends.">
+<meta property="og:description" content="A declarative UI DSL proc-macro framework for Rust, with pluggable code-generation backends. One casting, many inscriptions.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://xrune.to01.icu/og-card.png">
+<meta property="og:image" content="https://xrune.to01.icu/og-card.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="628">
+<meta property="og:image:alt" content="xrune · The Grimoire">
 <meta property="og:url" content="https://xrune.to01.icu/">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xrune.to01.icu/og-card.jpg">
 
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<link rel="preload" as="font" href="fonts/cardo-regular.woff2" type="font/woff2" crossorigin>
 <link rel="preload" as="font" href="fonts/cinzeldecorative-regular.woff2" type="font/woff2" crossorigin>
+<link rel="preload" as="font" href="fonts/cardo-regular.woff2" type="font/woff2" crossorigin>
+<link rel="preload" as="font" href="fonts/jetbrains-mono-regular.woff2" type="font/woff2" crossorigin>
 
 <link rel="stylesheet" href="landing.css">
 <link rel="stylesheet" href="ritual.css">
+<script>
+  (function () {
+    var root = document.documentElement;
+    root.className = root.className.replace("no-js", "js");
+    var lang = "";
+    try { lang = localStorage.getItem("xrune-lang") || ""; } catch (_) {}
+    if (lang !== "zh" && lang !== "en") {
+      var pref = (navigator.languages && navigator.languages[0]) || navigator.language || "en";
+      lang = pref.toLowerCase().indexOf("zh") === 0 ? "zh" : "en";
+    }
+    root.setAttribute("data-lang", lang);
+    if (lang === "zh") root.lang = "zh-CN";
+    // if the scripts never arrive, show the hero anyway
+    setTimeout(function () {
+      var hero = document.querySelector(".hero");
+      if (hero && !hero.classList.contains("s-text")) hero.classList.add("s-draw", "s-cool", "s-text", "done");
+    }, 7000);
+  })();
+</script>
 </head>
 <body>
 
-<div class="rune-field" id="runeField" aria-hidden="true"></div>
+<canvas id="embers" aria-hidden="true"></canvas>
 
-<header class="hero">
-  <img class="hero-bg" src="hero-pattern.svg" alt="" aria-hidden="true">
+<nav class="nav" id="nav" aria-label="Primary">
+  <a class="nav-brand" href="#top">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="2"/><circle cx="32" cy="32" r="21" fill="none" stroke="currentColor" stroke-opacity=".25"/><path d="M32 1v7M32 56v7M1 32h7M56 32h7" stroke="currentColor" stroke-opacity=".55" stroke-width="2"/><path d="M22.5 18.5 41.5 45.5M41.5 18.5 22.5 45.5" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="square"/></svg>
+    <span>xrune</span>
+  </a>
+  <div class="nav-links">
+    <a href="#ritual" data-i18n="nav.ritual">Ritual</a>
+    <a href="#forge" data-i18n="nav.forge">Forge</a>
+    <a href="#runes" data-i18n="nav.runes">Runes</a>
+    <a href="#nexus" data-i18n="nav.nexus">Nexus</a>
+    <a href="#wild" data-i18n="nav.wild">In the wild</a>
+  </div>
+  <div class="nav-end">
+    <a class="nav-book" href="book/" data-book="" data-i18n="nav.book">Grimoire</a>
+    <button class="nav-lang" id="langToggle" type="button" aria-label="Switch language · 切换语言"><span data-l="en">EN</span><span data-l="zh">中</span></button>
+    <a class="nav-icon" href="https://github.com/W-Mai/xrune" aria-label="GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+    <a class="nav-ver" href="https://crates.io/crates/xrune" aria-label="xrune on crates.io"><span data-crate-version>v1.10.1</span></a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-floor" aria-hidden="true"><div class="hero-sigil" id="heroSigil"></div></div>
   <div class="hero-inner">
-    <h1 class="brand">XRUNE</h1>
-    <p class="subtitle">The Grimoire</p>
-    <p class="tagline">One casting, many inscriptions. You speak the rite; the runesmith cuts it into code.</p>
-    <p class="tagline-zh">咒成于文，文译于师。一咒既立，万法可镌。</p>
+    <h1 class="brand">
+      <span class="sr-only">xrune</span>
+      <svg class="brand-svg" viewBox="-110 280 4830 1210" aria-hidden="true">
+        <defs>
+          <g id="xr-letters"><path pathLength="1" d="M 863 1222H877V1232H536V1222H549Q570 1222 583 1202Q589 1191 589 1181Q589 1171 583 1161L444 944L250 1220Q132 1386 -9 1386Q-30 1386 -52 1382V1372Q36 1364 99 1297Q129 1265 171 1208L405 884L222 601Q199 566 161 550Q141 542 121 542H107V532H447V542H434Q413 542 400 562Q394 573 394 583.5Q394 594 399 603L522 792L696 536Q810 369 952 369Q964 369 977 370V380Q895 382 813 493Q801 508 789.5 525Q778 542 775 545L562 854L762 1164Q779 1189 806.5 1205.5Q834 1222 863 1222 Z"/><path pathLength="1" d="M 2114 1402Q2036 1441 1948 1441Q1870 1441 1806 1417Q1668 1366 1571 1218Q1546 1182 1478 1080Q1410 978 1390 950Q1355 895 1334 890V880Q1335 880 1336.5 880Q1338 880 1340 880Q1342 880 1344 880Q1346 880 1349 880Q1352 880 1354 880Q1405 880 1448 857Q1513 821 1513 724Q1513 653 1473 614.5Q1433 576 1377 576H1301V1159Q1301 1185 1320 1203.5Q1339 1222 1365 1222H1378V1232H1074V1222H1087Q1112 1222 1131 1204Q1150 1186 1151 1160V605Q1150 579 1131.5 560.5Q1113 542 1087 542H1074V532H1417Q1546 532 1617 591Q1673 637 1673 721Q1673 805 1618.5 857.5Q1564 910 1494 910Q1488 910 1481 909Q1522 931 1549.5 958Q1577 985 1597.5 1009Q1618 1033 1632.5 1051.5Q1647 1070 1671 1100.5Q1695 1131 1721 1164Q1747 1197 1778.5 1231.5Q1810 1266 1848.5 1297Q1887 1328 1927 1348Q2012 1391 2114 1392 Z"/><path pathLength="1" d="M 2850 329Q2863 329 2877 330V340Q2759 349 2707 452Q2673 519 2673 622V979Q2671 1105 2592 1175.5Q2513 1246 2366.5 1246Q2220 1246 2133 1173.5Q2046 1101 2047 980V591Q2047 570 2031.5 556Q2016 542 1994 542H1978V532H2266V542H2250Q2219 542 2204 566Q2197 577 2197 590V972Q2197 1078 2252 1140Q2307 1202 2397 1202Q2398 1202 2398 1202Q2398 1202 2399 1202Q2488 1202 2545 1144Q2602 1086 2602 985V622Q2602 487 2673.5 408Q2745 329 2850 329 Z"/><path pathLength="1" d="M 4048 1364 4052 1374Q3996 1401 3939 1401Q3808 1401 3672 1256L3198 753V1162Q3198 1187 3216 1204.5Q3234 1222 3259 1222H3278V1232H2975V1222H2993Q3019 1222 3037 1204.5Q3055 1187 3055 1161V600Q3006 544 2981 521.5Q2956 499 2936.5 484Q2917 469 2899 459Q2857 435 2831.5 431Q2806 427 2783.5 427Q2761 427 2735 436L2731 426Q2786 394 2844 394Q2970 394 3111 544L3558 1019V603Q3557 577 3539 559.5Q3521 542 3496 542H3478V532H3781V542H3762Q3737 542 3719 559.5Q3701 577 3700 602V1171L3716 1187Q3722 1193 3734.5 1207.5Q3747 1222 3757 1232.5Q3767 1243 3782.5 1259Q3798 1275 3811.5 1287Q3825 1299 3843.5 1313Q3862 1327 3878.5 1336.5Q3895 1346 3916 1354.5Q3937 1363 3956.5 1366.5Q3976 1370 3999.5 1370Q4023 1370 4048 1364 Z"/><path pathLength="1" d="M 4044 1222Q4070 1222 4088.5 1203.5Q4107 1185 4108 1159V602Q4105 567 4075 550Q4060 542 4044 542H4031V532H4312Q4356 532 4389 525Q4422 518 4432 514V689H4421V677Q4422 632 4395.5 604.5Q4369 577 4324 575H4258V866H4417Q4454 865 4478 840.5Q4502 816 4502 780V771H4511V1002H4502V994Q4502 957 4478 933Q4454 909 4418 908H4258V1189H4453Q4526 1189 4575.5 1147Q4625 1105 4649 1028H4659L4612 1232H4031V1222 Z"/></g>
+          <linearGradient id="xr-gold" gradientUnits="userSpaceOnUse" x1="0" y1="329" x2="0" y2="1441">
+            <stop offset="0" stop-color="#fff2c6"/>
+            <stop offset=".2" stop-color="#ecc870"/>
+            <stop offset=".47" stop-color="#9a6f2b"/>
+            <stop offset=".58" stop-color="#d6ae5a"/>
+            <stop offset=".8" stop-color="#f5da94"/>
+            <stop offset="1" stop-color="#86602a"/>
+          </linearGradient>
+          <linearGradient id="xr-hot" gradientUnits="userSpaceOnUse" x1="0" y1="1490" x2="0" y2="1790">
+            <stop offset="0" stop-color="#fffdf0"/>
+            <stop offset=".2" stop-color="#ffe08c"/>
+            <stop offset=".62" stop-color="#f6a640"/>
+            <stop offset="1" stop-color="#c9681f"/>
+          </linearGradient>
+          <linearGradient id="xr-sheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="760" y2="260">
+            <stop offset="0" stop-color="#fffbe9" stop-opacity="0"/>
+            <stop offset=".5" stop-color="#fffbe9" stop-opacity=".8"/>
+            <stop offset="1" stop-color="#fffbe9" stop-opacity="0"/>
+            <animateTransform id="xrSheenAnim" attributeName="gradientTransform" type="translate" values="-1300 0;5600 0" dur="1.9s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".45 0 .2 1"/>
+          </linearGradient>
+          <filter id="xr-soft" x="-5%" y="-10%" width="110%" height="130%"><feGaussianBlur stdDeviation="14"/></filter>
+          <clipPath id="xr-pour"><rect id="xrLevel" x="-200" y="1490" width="5200" height="0"/></clipPath>
+        </defs>
+        <use href="#xr-letters" class="xr-shadow" transform="translate(0 22)" filter="url(#xr-soft)"/>
+        <use href="#xr-letters" class="xr-groove"/>
+        <g clip-path="url(#xr-pour)"><use href="#xr-letters" class="xr-molten"/></g>
+        <use href="#xr-letters" class="xr-rim" transform="translate(0 -6)"/>
+        <use href="#xr-letters" class="xr-gold"/>
+        <use href="#xr-letters" class="xr-sheen"/>
+        <use href="#xr-letters" class="xr-carve"/>
+      </svg>
+    </h1>
+    <div class="crest h-seq" style="--d:0">
+      <img class="hero-flourish" src="hero-pattern.svg" alt="" aria-hidden="true">
+      <p class="subtitle" data-i18n="hero.subtitle">The Grimoire</p>
+    </div>
+    <p class="tagline h-seq" style="--d:220" data-i18n="hero.tagline">One casting, many inscriptions. You speak the rite; the runesmith cuts it into code.</p>
+    <p class="tagline-gloss h-seq" style="--d:320" data-i18n="hero.gloss">咒成于文，文译于师。一咒既立，万法可镌。</p>
 
-    <div class="cta">
-      <a class="btn primary" href="book/">Read the Grimoire</a>
-      <a class="btn primary alt" href="book/zh-CN/">阅读中文版</a>
-      <a class="btn secondary" href="https://github.com/W-Mai/xrune">GitHub</a>
-      <a class="btn secondary" href="https://crates.io/crates/xrune">crates.io</a>
+    <div class="cta h-seq" style="--d:460">
+      <a class="btn btn-gold" href="book/" data-book=""><span class="btn-glyph" data-glyph="gebo"></span><span data-i18n="cta.read">Read the Grimoire</span></a>
+      <a class="btn btn-ghost" href="#forge" data-i18n="cta.forge">Enter the Forge</a>
+      <div class="install" role="group" aria-label="Install">
+        <span class="prompt">$</span><code>cargo add xrune</code>
+        <button type="button" data-copy="cargo add xrune" data-i18n="cta.copy">copy</button>
+      </div>
     </div>
   </div>
-  <div class="scroll-cue" aria-hidden="true">scroll</div>
+  <a class="scroll-cue h-seq" style="--d:700" href="#what" aria-label="Scroll"><span data-i18n="hero.scroll">scroll</span><i></i></a>
 </header>
 
-<section class="pitch">
-  <div class="container zigzag">
-    <div class="zz-head">
-      <h2>What it is</h2>
-    </div>
-    <div class="zz-body">
-      <p>
-        <code>xrune</code> is a Rust proc-macro framework. You write a casting in
-        its declarative DSL, and a <em>runesmith</em> you bind (an
-        implementation of the seven-method <code>DsRune</code> trait) inscribes
-        it into whatever code your host actually needs &mdash; ECS spawn calls,
-        a render-tree builder, a debug echo, a formatter round-trip.
-      </p>
-      <p>
-        The DSL parses; the runesmith decides what the parse becomes. Same
-        casting, many translations.
-      </p>
+<main>
+
+<section class="pitch" id="what">
+  <div class="container wide">
+    <header class="sec-head reveal">
+      <p class="kicker"><span class="num">I</span><span data-i18n="what.kicker">What it is</span></p>
+      <h2 class="ink" data-i18n="what.title">One Casting, Many Inscriptions</h2>
+    </header>
+    <div class="pitch-grid">
+      <div class="pitch-text reveal">
+        <p class="dropcap" data-i18n-html="what.p1">Write a casting in xrune's declarative DSL. A <em>runesmith</em> you bind — any type implementing the eight-method <code>DsRune</code> trait — inscribes it into whatever code your host actually needs: ECS spawn calls, a render-tree builder, a debug echo, a formatter round-trip.</p>
+        <p data-i18n-html="what.p2">The DSL only parses. Widget names are any identifier and attribute values are any Rust expression, so every shred of meaning lives in the rune you bind.</p>
+      </div>
+      <figure class="prism reveal" id="prism">
+        <svg class="prism-beams" id="prismBeams" aria-hidden="true"></svg>
+        <div class="prism-src vellum">
+          <span class="tag">ui! { … }</span>
+<pre><code class="hl-dsl">column {
+    title ("Grimoire")
+    walk $pages with p {
+        page (p) on Tap(open)
+    }
+}</code></pre>
+        </div>
+        <div class="prism-core" aria-hidden="true"><div class="prism-sigil" id="prismSigil"></div><span>decipher</span></div>
+        <ul class="prism-out">
+          <li><b>DefaultRune</b><span data-i18n="what.o1">a println! trace of every node</span></li>
+          <li><b>mirui</b><span data-i18n="what.o2">live widgets on MCU, desktop, phone, web</span></li>
+          <li><b>xrune-fmt</b><span data-i18n="what.o3">the same casting, re-scribed</span></li>
+          <li class="yours"><b data-i18n="what.o4t">your rune</b><span data-i18n="what.o4">whatever your host needs</span></li>
+        </ul>
+      </figure>
     </div>
   </div>
 </section>
 
 <section class="ritual" id="ritual">
-  <div class="r-motes" aria-hidden="true"></div>
-  <div class="container r-inner">
-    <h2>Watch a Casting Compile</h2>
-    <p class="r-sub">One incantation, traced through every form it takes — source, tree, trait calls, code.</p>
+  <div class="container wide r-inner">
+    <header class="sec-head reveal">
+      <p class="kicker"><span class="num">II</span><span data-i18n="ritual.kicker">The Ritual</span></p>
+      <h2 class="ink" data-i18n="ritual.title">Watch a Casting Compile</h2>
+      <p class="lede" data-i18n="ritual.lede">One incantation, traced through every form it takes: source, tree, trait calls, code.</p>
+    </header>
 
-    <div class="r-rail" aria-hidden="true">
-      <span class="r-stage" data-stage="A">DSL → DsTree</span>
-      <span class="r-arrow">→</span>
-      <span class="r-stage" data-stage="B">DsTree → DsRune</span>
-      <span class="r-arrow">→</span>
-      <span class="r-stage" data-stage="C">DsRune → code</span>
-      <span class="r-arrow">→</span>
-      <span class="r-stage" data-stage="seal">seal</span>
+    <div class="r-bar reveal">
+      <div class="r-rail" role="group" aria-label="Stages">
+        <button class="r-stage" type="button" data-stage="A"><i>A</i>DSL → DsTree</button>
+        <span class="r-arrow" aria-hidden="true"></span>
+        <button class="r-stage" type="button" data-stage="B"><i>B</i>DsTree → DsRune</button>
+        <span class="r-arrow" aria-hidden="true"></span>
+        <button class="r-stage" type="button" data-stage="C"><i>C</i>DsRune → code</button>
+        <span class="r-arrow" aria-hidden="true"></span>
+        <button class="r-stage" type="button" data-stage="seal"><i>✦</i>seal</button>
+      </div>
+      <div class="r-ctrl">
+        <button type="button" id="rPlay" class="r-btn" aria-label="Pause"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="i-pause" d="M4 3h3v10H4zM9 3h3v10H9z"/><path class="i-play" d="M5 3l8 5-8 5z"/></svg></button>
+        <button type="button" id="rRestart" class="r-btn" aria-label="Restart"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3a5 5 0 1 1-4.6 3H1.2l2.6-3 2.6 3H4.5A3.6 3.6 0 1 0 8 4.4z"/></svg></button>
+      </div>
     </div>
 
-    <div class="r-belt" id="rBelt"></div>
+    <div class="r-belt" id="rBelt"><svg class="r-thread" id="rThread" aria-hidden="true"></svg></div>
 
     <div class="r-seal" id="rSeal">
-      <span class="badge"><span class="glyph">✦</span> seal() → proc_macro2::TokenStream</span>
+      <span class="badge"><span class="glyph" data-glyph="ingwaz"></span> seal() → proc_macro2::TokenStream</span>
     </div>
   </div>
 </section>
 
-<section class="volumes">
-  <div class="container">
-    <h2>Five volumes and a hub</h2>
-    <table>
-      <thead>
-        <tr><th>Volume</th><th>Suffix</th><th>Office</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><a href="https://crates.io/crates/xrune"><code>xrune</code></a></td><td>—</td><td>Opening scroll. The single dependency a reader summons.</td></tr>
-        <tr><td><a href="https://crates.io/crates/xrune-nexus"><code>xrune-nexus</code></a></td><td><strong>nexus</strong></td><td>The hub. AST, the <code>DsRune</code> trait, the <code>decipher</code> walker.</td></tr>
-        <tr><td><a href="https://crates.io/crates/xrune-incant"><code>xrune-incant</code></a></td><td><strong>incant</strong></td><td>The speaking-stone. The <code>ui! { … }</code> proc macro.</td></tr>
-        <tr><td><a href="https://crates.io/crates/xrune-sigil"><code>xrune-sigil</code></a></td><td><strong>sigil</strong></td><td>The sigil-forge. The <code>DsRef</code> derive.</td></tr>
-        <tr><td><a href="https://crates.io/crates/xrune-fmt"><code>xrune-fmt</code></a></td><td><strong>fmt</strong></td><td>The scribe. Formatter for <code>ui! { … }</code> blocks.</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+<section class="forge" id="forge">
+  <div class="container wide">
+    <header class="sec-head reveal">
+      <p class="kicker"><span class="num">III</span><span data-i18n="forge.kicker">The Forge</span></p>
+      <h2 class="ink" data-i18n="forge.title">The Spellbook</h2>
+      <p class="lede" data-i18n="forge.lede">Write a casting. The real xrune parser, compiled to WebAssembly, deciphers it on every keystroke, then three runes inscribe it.</p>
+    </header>
 
-<section class="why">
-  <div class="container">
-    <h2>When to reach for it</h2>
-    <div class="cards">
-      <div class="card">
-        <h3>Plug-in code-gen</h3>
-        <p>One DSL, many runes. The same casting can become spawn calls, a render builder, a static analyzer.</p>
+    <div class="book reveal" id="book">
+      <div class="ribbons" id="ribbons" role="tablist" aria-label="Castings"></div>
+      <div class="pages">
+        <div class="page page-l">
+          <div class="page-head">
+            <span class="page-title" data-i18n="forge.casting">The Casting</span>
+            <span class="forge-status" id="forgeStatus" aria-live="polite"></span>
+          </div>
+          <div class="editor" id="editor">
+            <div class="ed-gutter" id="edGutter" aria-hidden="true"></div>
+            <div class="ed-body" id="edBody">
+              <pre class="ed-hl" id="edHl" aria-hidden="true"></pre>
+              <div class="ed-marks" id="edMarks" aria-hidden="true"></div>
+              <textarea id="edInput" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Casting source"></textarea>
+            </div>
+          </div>
+          <div class="ed-error" id="edError" hidden></div>
+          <p class="gloss" id="gloss"></p>
+        </div>
+        <div class="spine" aria-hidden="true"></div>
+        <div class="page page-r">
+          <div class="page-head tabs" id="viewTabs" role="tablist" aria-label="Inscriptions">
+            <button type="button" role="tab" data-view="calls" class="on">decipher</button>
+            <button type="button" role="tab" data-view="tree">DsTree</button>
+            <button type="button" role="tab" data-view="default">DefaultRune</button>
+            <button type="button" role="tab" data-view="scribe">scribe</button>
+          </div>
+          <div class="view" id="forgeView" role="tabpanel"></div>
+        </div>
       </div>
-      <div class="card">
-        <h3>Untyped at parse time</h3>
-        <p>Widget names are arbitrary idents; attribute values are arbitrary <code>syn::Expr</code>. All semantics live in the runesmith you bind.</p>
-      </div>
-      <div class="card">
-        <h3>Built for hosting</h3>
-        <p>Ship your own proc-macro crate, swap in your own runesmith, and downstream users write the same DSL with your code-gen.</p>
+      <div class="book-foot">
+        <span id="forgeEngine" class="engine"></span>
+        <button type="button" class="btn-mini" id="forgeCopy" data-i18n="forge.copy">Copy as ui! { … }</button>
       </div>
     </div>
   </div>
 </section>
 
-<footer>
-  <div class="container">
-    <p>
-      MIT licence ·
-      <a href="https://github.com/W-Mai/xrune">github.com/W-Mai/xrune</a> ·
-      <a href="book/">English docs</a> ·
-      <a href="book/zh-CN/">中文文档</a>
-    </p>
+<section class="covenant" id="runes">
+  <div class="container wide">
+    <header class="sec-head reveal">
+      <p class="kicker"><span class="num">IV</span><span data-i18n="runes.kicker">The Covenant</span></p>
+      <h2 class="ink" data-i18n="runes.title">The Eight Runes</h2>
+      <p class="lede" data-i18n-html="runes.lede">A rune is any type that implements <code>DsRune</code>: eight methods, no defaults. <code>decipher</code> calls one per node; your rune decides what each becomes.</p>
+    </header>
+    <div class="cov-grid">
+      <div class="cov-wheel reveal" id="covWheel"></div>
+      <div class="cov-plate vellum reveal" id="covPlate" aria-live="polite"></div>
+    </div>
+    <div class="cov-notes">
+      <article class="note vellum reveal">
+        <h3 data-i18n="runes.host.t">Host it in your own proc-macro</h3>
+        <p data-i18n-html="runes.host.p"><code>ui!</code> hard-wires <code>DefaultRune</code>. A real backend ships its own proc-macro crate and swaps in its rune; downstream users write the same DSL.</p>
+<pre><code class="hl-rust">#[proc_macro]
+pub fn my_ui(input: TokenStream) -> TokenStream {
+    let root = parse_macro_input!(input as DsRoot);
+    let mut rune = MyRune::new();
+    rune.inscribe_root(&amp;root.get_parent());
+    decipher(&amp;root.get_content(), &amp;mut rune);
+    TokenStream::from(rune.seal())
+}</code></pre>
+      </article>
+      <article class="note warn vellum reveal" style="--i:1">
+        <h3 data-i18n="runes.trap.t">The one foot-gun</h3>
+        <p data-i18n-html="runes.trap.p"><code>decipher</code> walks only the root for you. Every inscribe that receives children must recurse itself. Forget it and the subtree vanishes, without a word.</p>
+<pre><code class="hl-rust">fn inscribe_widget(&amp;mut self, name: &amp;syn::Ident, /* … */ children: &amp;[DsTreeRef]) {
+    /* … emit code for `name` … */
+    for child in children {
+        decipher(child, self); // omit this and the subtree disappears
+    }
+}</code></pre>
+      </article>
+    </div>
   </div>
+</section>
+
+<section class="nexus" id="nexus">
+  <div class="container wide">
+    <header class="sec-head reveal">
+      <p class="kicker"><span class="num">V</span><span data-i18n="nexus.kicker">The Nexus</span></p>
+      <h2 class="ink" data-i18n="nexus.title">Five Volumes and a Hub</h2>
+      <p class="lede" data-i18n="nexus.lede">One workspace, one moving version. Every release advances all five together.</p>
+    </header>
+    <div class="constellation reveal" id="constellation">
+      <svg class="cn-lines" id="cnLines" aria-hidden="true"></svg>
+      <a class="cn-node" data-node="sigil" href="https://crates.io/crates/xrune-sigil" style="--x:11%;--y:36%">
+        <span class="cn-head"><span class="cn-glyph" data-glyph="eihwaz"></span><b>xrune-sigil</b></span>
+        <i data-i18n="nexus.sigil.lore">The sigil-forge</i>
+        <span data-i18n-html="nexus.sigil.desc"><code>#[derive(DsRef)]</code> mints the <code>Rc&lt;RefCell&gt;</code> handles the tree is built from.</span>
+      </a>
+      <a class="cn-node hub" data-node="nexus" href="https://crates.io/crates/xrune-nexus" style="--x:41%;--y:50%">
+        <span class="cn-head"><span class="cn-glyph" data-glyph="gebo"></span><b>xrune-nexus</b></span>
+        <i data-i18n="nexus.nexus.lore">The hub</i>
+        <span data-i18n-html="nexus.nexus.desc">The AST, the <code>DsRune</code> trait and the <code>decipher</code> walk. Everything binds here.</span>
+      </a>
+      <a class="cn-node" data-node="incant" href="https://crates.io/crates/xrune-incant" style="--x:72%;--y:15%">
+        <span class="cn-head"><span class="cn-glyph" data-glyph="ansuz"></span><b>xrune-incant</b></span>
+        <i data-i18n="nexus.incant.lore">The speaking-stone</i>
+        <span data-i18n-html="nexus.incant.desc">The <code>ui! { … }</code> proc macro, bound to <code>DefaultRune</code>.</span>
+      </a>
+      <a class="cn-node" data-node="xrune" href="https://crates.io/crates/xrune" style="--x:89%;--y:52%">
+        <span class="cn-head"><span class="cn-glyph" data-glyph="fehu"></span><b>xrune</b></span>
+        <i data-i18n="nexus.xrune.lore">The opening scroll</i>
+        <span data-i18n-html="nexus.xrune.desc">The one dependency you add. Re-exports the hub and <code>ui!</code>.</span>
+      </a>
+      <a class="cn-node" data-node="fmt" href="https://crates.io/crates/xrune-fmt" style="--x:66%;--y:86%">
+        <span class="cn-head"><span class="cn-glyph" data-glyph="mannaz"></span><b>xrune-fmt</b></span>
+        <i data-i18n="nexus.fmt.lore">The scribe</i>
+        <span data-i18n-html="nexus.fmt.desc">Rewrites every <code>ui! { … }</code> through the real parser. The Forge runs its formatter.</span>
+      </a>
+      <a class="cn-node ghost" data-node="mirui" href="#wild" style="--x:15%;--y:84%">
+        <span class="cn-head"><span class="cn-glyph" data-glyph="raido"></span><b>mirui-macros</b></span>
+        <i data-i18n="nexus.mirui.lore">A host in the wild</i>
+        <span data-i18n-html="nexus.mirui.desc">Depends on <code>xrune = "1.10"</code>; its <code>ui!</code> is a rune.</span>
+      </a>
+    </div>
+    <p class="cn-foot reveal"><span data-i18n="nexus.order">publish order</span> <code>sigil → nexus → incant → xrune → fmt</code></p>
+  </div>
+</section>
+
+<section class="wild" id="wild">
+  <div class="container wide wild-grid">
+    <div class="wild-text">
+      <header class="sec-head reveal">
+        <p class="kicker"><span class="num">VI</span><span data-i18n="wild.kicker">In the Wild</span></p>
+        <h2 class="ink" data-i18n="wild.title">mirui Speaks xrune</h2>
+        <p class="lede" data-i18n="wild.lede">mirui, a Rust UI framework that runs on microcontrollers, desktops, phones and the web, writes its UI in xrune castings. Its ui! macro is a rune.</p>
+      </header>
+      <div class="wild-code vellum reveal">
+        <div class="wc-tabs" role="tablist">
+          <button type="button" role="tab" class="on" data-wc="decl" data-i18n="wild.decl">template · @@ declares</button>
+          <button type="button" role="tab" data-wc="fill" data-i18n="wild.fill">call site · @ fills</button>
+          <a class="wc-src" href="https://github.com/W-Mai/mirui/blob/main/src/gallery/demos/niche/card.rs" data-i18n="wild.src">abridged · source ↗</a>
+        </div>
+<pre data-wc-pane="decl"><code class="hl-dsl">ui!(compose Card {
+    Column (direction: FlexDirection::Column, grow: 1.0) {
+        View (bg_color: ColorToken::Primary, height: 32) {
+            @@header {
+                Text (
+                    "(untitled)",
+                    text_color: ColorToken::OnPrimary
+                )
+            }
+        }
+        View (bg_color: ColorToken::SurfaceVariant, grow: 1.0) {
+            @@body {
+                Text ("no body yet")
+            }
+        }
+        View (height: 32) {
+            @@footer
+        }
+    }
+});</code></pre>
+<pre data-wc-pane="fill" hidden><code class="hl-dsl">Card (width: Dimension::percent(100), height: 140) {
+    @header {
+        Text ("ALERT", text_color: ColorToken::OnPrimary)
+    }
+    @body {
+        Text ("@header @body @footer")
+        Text ("each pick their own slot.")
+    }
+    @footer {
+        Text ("FOOTER SLOT", font_size: 11)
+    }
+}</code></pre>
+      </div>
+    </div>
+    <figure class="wild-device reveal" style="--i:1">
+      <div class="win">
+        <div class="win-bar"><i></i><i></i><i></i><span>mirui.rs/?demo=niche</span><a href="https://mirui.rs/?demo=niche" aria-label="Open mirui demo in a new tab" target="_blank" rel="noopener">↗</a></div>
+        <div class="win-body" id="wildStage">
+          <img src="mirui-niche.webp" width="960" height="640" loading="lazy" alt="mirui's named-slot demo: Card templates whose header, body and footer slots are filled at the call site">
+          <button type="button" class="wild-play" id="wildPlay"><span class="dot"></span><span data-i18n="wild.play">Run the live demo</span></button>
+        </div>
+      </div>
+      <figcaption data-i18n="wild.cap">Real mirui, compiled to WebAssembly, rendering the Card on the left. 480 × 320.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="reach" id="reach">
+  <div class="container wide">
+    <header class="sec-head center reveal">
+      <p class="kicker"><span class="num">VII</span><span data-i18n="reach.kicker">The Choice</span></p>
+      <h2 class="ink" data-i18n="reach.title">When to Reach for It</h2>
+    </header>
+    <div class="seals">
+      <article class="seal-card gilt reveal">
+        <svg class="seal-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 16h8m0 0c5 0 5-9 10-9h8M11 16h18M11 16c5 0 5 9 10 9h8"/><circle cx="3" cy="16" r="1.6"/><circle cx="29" cy="7" r="1.6"/><circle cx="29" cy="16" r="1.6"/><circle cx="29" cy="25" r="1.6"/></svg>
+        <h3 data-i18n="reach.c1.t">Plug-in code-gen</h3>
+        <p data-i18n="reach.c1.p">One DSL, many runes. The same casting can become spawn calls, a render builder, a static analyzer.</p>
+      </article>
+      <article class="seal-card gilt reveal" style="--i:1">
+        <svg class="seal-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M11 5c-4 0-4 3-4 6s-3 5-3 5 3 2 3 5 0 6 4 6M21 5c4 0 4 3 4 6s3 5 3 5-3 2-3 5 0 6-4 6"/><path d="M13 12l6 8M19 12l-6 8"/></svg>
+        <h3 data-i18n="reach.c2.t">Untyped at parse time</h3>
+        <p data-i18n-html="reach.c2.p">Widget names are arbitrary idents; attribute values are arbitrary <code>syn::Expr</code>. All semantics live in the runesmith you bind.</p>
+      </article>
+      <article class="seal-card gilt reveal" style="--i:2">
+        <svg class="seal-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 28V15a10 10 0 0 1 20 0v13M3 28h26"/><path d="M14 3h4l-.8 6h-2.4z"/></svg>
+        <h3 data-i18n="reach.c3.t">Built for hosting</h3>
+        <p data-i18n="reach.c3.p">Ship your own proc-macro crate, bind your own runesmith, and downstream users write the same DSL with your code-gen.</p>
+      </article>
+    </div>
+    <p class="elsewhere reveal" data-i18n-html="reach.else">Need compile-time types on widget names and attribute keys? Reach for a typed-builder DSL such as <code>leptos::view!</code>, <code>dioxus::rsx!</code> or <code>yew::html!</code>. <a href="book/comparisons.html" data-book="comparisons.html">Read the comparison →</a></p>
+  </div>
+</section>
+
+<section class="rite" id="begin">
+  <div class="container rite-inner reveal">
+    <h2 class="ink" data-i18n="rite.title">Begin the Rite</h2>
+    <div class="install big" role="group" aria-label="Install">
+      <span class="prompt">$</span><code>cargo add xrune</code>
+      <button type="button" data-copy="cargo add xrune" data-i18n="cta.copy">copy</button>
+    </div>
+    <div class="cta">
+      <a class="btn btn-gold" href="book/" data-book=""><span class="btn-glyph" data-glyph="gebo"></span><span data-i18n="cta.read">Read the Grimoire</span></a>
+      <a class="btn btn-ghost" href="https://github.com/W-Mai/xrune">GitHub</a>
+      <a class="btn btn-ghost" href="https://crates.io/crates/xrune">crates.io</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="colophon">
+  <div class="wax" id="waxSeal" aria-hidden="true"></div>
+  <p class="explicit" data-i18n="foot.explicit">Here ends the first leaf of the Grimoire.</p>
+  <p class="meta">
+    <span data-i18n="foot.licence">MIT licence</span> ·
+    <span data-crate-version>v1.10.1</span><span data-crate-downloads></span> ·
+    <a href="https://github.com/W-Mai/xrune">github.com/W-Mai/xrune</a> ·
+    <a href="book/">English docs</a> ·
+    <a href="book/zh-CN/">中文文档</a> ·
+    <a href="book/codex.html" data-book="codex.html" data-i18n="foot.codex">Codex of changes</a>
+  </p>
 </footer>
 
-<script src="runes-bg.js" defer></script>
+<script src="i18n.js"></script>
+<script src="runes.js"></script>
+<script src="embers.js" defer></script>
+<script src="hero.js" defer></script>
 <script src="ritual.js" defer></script>
-
-
+<script src="forge.js" defer></script>
+<script src="covenant.js" defer></script>
+<script src="site.js" defer></script>
 </body>
 </html>
