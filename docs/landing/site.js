@@ -1,5 +1,5 @@
 /* Page plumbing: nav state, scroll reveals, copy buttons, the live crate
- * version, beams in the prism and the nexus, the mirui demo, the wax seal. */
+ * version, beams in the prism and the nexus, the mirui Card, the wax seal. */
 (function () {
   var NS = 'http://www.w3.org/2000/svg';
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -155,33 +155,72 @@
   window.addEventListener('load', redraw);
   redraw();
 
-  // ---- mirui: the code tabs, and the live demo on demand
-  $$('.wc-tabs button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var k = b.getAttribute('data-wc');
-      $$('.wc-tabs button').forEach(function (x) { x.classList.toggle('on', x === b); });
-      $$('[data-wc-pane]').forEach(function (p) { p.hidden = p.getAttribute('data-wc-pane') !== k; });
-    });
+  // ---- mirui: the template and the call site, and the Card they compose
+  var stage = document.getElementById('wildStage'), card = document.getElementById('wildCard');
+  var wcode = document.querySelector('.wild-code'), touched = false;
+  // tag every code line with the slot it declares or fills
+  $$('[data-wc-pane] code').forEach(function (code) {
+    var text = code.textContent.split('\n'), html = code.innerHTML.split('\n');
+    if (text.length !== html.length) return;
+    var slot = null, depth = 0;
+    code.innerHTML = html.map(function (h, i) {
+      var t = text[i], m;
+      if (!slot && (m = /^\s*@@?(\w+)/.exec(t))) { slot = m[1]; depth = 0; }
+      var own = slot;
+      if (slot) {
+        depth += (t.match(/\{/g) || []).length - (t.match(/\}/g) || []).length;
+        if (depth <= 0) slot = null;
+      }
+      return '<span class="ln"' + (own ? ' data-slot="' + own + '"' : '') + '>' + h + '</span>';
+    }).join('\n');
   });
-  var play = document.getElementById('wildPlay'), stage = document.getElementById('wildStage');
-  if (play && stage) {
-    play.addEventListener('click', function () {
-      var poster = stage.querySelector('img');
-      var f = document.createElement('iframe');
-      f.className = 'wild-frame';
-      f.src = 'https://mirui.rs/?demo=niche';
-      f.title = 'mirui · niche slots demo';
-      f.setAttribute('allow', 'fullscreen');
-      play.disabled = true;
-      var label = play.querySelector('[data-i18n]');
-      if (label) label.textContent = T('wild.loading');
-      // never move the frame once it is in the document: that reloads it
-      f.addEventListener('load', function () {
-        f.classList.add('on');
-        setTimeout(function () { if (poster) poster.remove(); play.remove(); }, 800);
-      }, { once: true });
-      stage.appendChild(f);
+  function setMode(mode) {
+    if (!stage) return;
+    stage.setAttribute('data-mode', mode);
+    $$('.wc-tabs button').forEach(function (x) {
+      var on = x.getAttribute('data-wc') === mode;
+      x.classList.toggle('on', on);
+      x.setAttribute('aria-selected', on ? 'true' : 'false');
     });
+    $$('[data-wc-pane]').forEach(function (p) { p.classList.toggle('off', p.getAttribute('data-wc-pane') !== mode); });
+    stage.classList.remove('sweep');
+    void stage.offsetWidth;
+    stage.classList.add('sweep');
+  }
+  $$('.wc-tabs button').forEach(function (b) {
+    b.addEventListener('click', function () { touched = true; setMode(b.getAttribute('data-wc')); });
+  });
+  if (card) {
+    var flip = function () { touched = true; setMode(stage.getAttribute('data-mode') === 'fill' ? 'decl' : 'fill'); };
+    card.addEventListener('click', flip);
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+    });
+  }
+  function linkSlot(name) {
+    if (wcode) wcode.classList.toggle('linking', !!name);
+    $$('.wild-code .ln').forEach(function (l) { l.classList.toggle('hot', !!name && l.getAttribute('data-slot') === name); });
+    if (stage) $$('.ws-slot', stage).forEach(function (s) { s.classList.toggle('hot', !!name && s.getAttribute('data-slot') === name); });
+  }
+  if (stage) $$('.ws-slot', stage).forEach(function (s) {
+    s.addEventListener('mouseenter', function () { linkSlot(s.getAttribute('data-slot')); });
+    s.addEventListener('mouseleave', function () { linkSlot(null); });
+  });
+  if (wcode) {
+    wcode.addEventListener('mouseover', function (e) {
+      var l = e.target.closest && e.target.closest('.ln[data-slot]');
+      linkSlot(l ? l.getAttribute('data-slot') : null);
+    });
+    wcode.addEventListener('mouseleave', function () { linkSlot(null); });
+  }
+  // the first time the Card comes into view, the call site fills it once
+  if (stage && !reduce && 'IntersectionObserver' in window) {
+    var seen = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting) return;
+      seen.disconnect();
+      setTimeout(function () { if (!touched) setMode('fill'); }, 1600);
+    }, { threshold: 0.6 });
+    seen.observe(stage);
   }
 
   // ---- the wax seal in the colophon

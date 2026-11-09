@@ -271,7 +271,7 @@ pub fn my_ui(input: TokenStream) -> TokenStream {
       </article>
       <article class="note warn vellum reveal" style="--i:1">
         <h3 data-i18n="runes.trap.t">The one foot-gun</h3>
-        <p data-i18n-html="runes.trap.p"><code>decipher</code> walks only the root for you. Every inscribe that receives children must recurse itself. Forget it and the subtree vanishes, without a word.</p>
+        <p data-i18n-html="runes.trap.p"><code>decipher</code> never walks the children it hands you. Every inscribe that receives them must recurse itself. Forget it and the subtree vanishes, without a word.</p>
 <pre><code class="hl-rust">fn inscribe_widget(&amp;mut self, name: &amp;syn::Ident, /* … */ children: &amp;[DsTreeRef]) {
     /* … emit code for `name` … */
     for child in children {
@@ -288,7 +288,6 @@ pub fn my_ui(input: TokenStream) -> TokenStream {
     <header class="sec-head reveal">
       <p class="kicker"><span class="num">V</span><span data-i18n="nexus.kicker">The Nexus</span></p>
       <h2 class="ink" data-i18n="nexus.title">Five Volumes and a Hub</h2>
-      <p class="lede" data-i18n="nexus.lede">One workspace, one moving version. Every release advances all five together.</p>
     </header>
     <div class="constellation reveal" id="constellation">
       <svg class="cn-lines" id="cnLines" aria-hidden="true"></svg>
@@ -323,7 +322,6 @@ pub fn my_ui(input: TokenStream) -> TokenStream {
         <span data-i18n-html="nexus.mirui.desc">Depends on <code>xrune = "1.10"</code>; its <code>ui!</code> is a rune.</span>
       </a>
     </div>
-    <p class="cn-foot reveal"><span data-i18n="nexus.order">publish order</span> <code>sigil → nexus → incant → xrune → fmt</code></p>
   </div>
 </section>
 
@@ -337,10 +335,11 @@ pub fn my_ui(input: TokenStream) -> TokenStream {
       </header>
       <div class="wild-code vellum reveal">
         <div class="wc-tabs" role="tablist">
-          <button type="button" role="tab" class="on" data-wc="decl" data-i18n="wild.decl">template · @@ declares</button>
-          <button type="button" role="tab" data-wc="fill" data-i18n="wild.fill">call site · @ fills</button>
+          <button type="button" role="tab" class="on" aria-selected="true" data-wc="decl" data-i18n="wild.decl">template · @@ declares</button>
+          <button type="button" role="tab" aria-selected="false" data-wc="fill" data-i18n="wild.fill">call site · @ fills</button>
           <a class="wc-src" href="https://github.com/W-Mai/mirui/blob/main/src/gallery/demos/niche/card.rs" data-i18n="wild.src">abridged · source ↗</a>
         </div>
+        <div class="wc-panes">
 <pre data-wc-pane="decl"><code class="hl-dsl">ui!(compose Card {
     Column (direction: FlexDirection::Column, grow: 1.0) {
         View (bg_color: ColorToken::Primary, height: 32) {
@@ -361,7 +360,7 @@ pub fn my_ui(input: TokenStream) -> TokenStream {
         }
     }
 });</code></pre>
-<pre data-wc-pane="fill" hidden><code class="hl-dsl">Card (width: Dimension::percent(100), height: 140) {
+<pre data-wc-pane="fill" class="off"><code class="hl-dsl">Card (width: Dimension::percent(100), height: 140) {
     @header {
         Text ("ALERT", text_color: ColorToken::OnPrimary)
     }
@@ -373,17 +372,32 @@ pub fn my_ui(input: TokenStream) -> TokenStream {
         Text ("FOOTER SLOT", font_size: 11)
     }
 }</code></pre>
-      </div>
-    </div>
-    <figure class="wild-device reveal" style="--i:1">
-      <div class="win">
-        <div class="win-bar"><i></i><i></i><i></i><span>mirui.rs/?demo=niche</span><a href="https://mirui.rs/?demo=niche" aria-label="Open mirui demo in a new tab" target="_blank" rel="noopener">↗</a></div>
-        <div class="win-body" id="wildStage">
-          <img src="mirui-niche.webp" width="960" height="640" loading="lazy" alt="mirui's named-slot demo: Card templates whose header, body and footer slots are filled at the call site">
-          <button type="button" class="wild-play" id="wildPlay"><span class="dot"></span><span data-i18n="wild.play">Run the live demo</span></button>
         </div>
       </div>
-      <figcaption data-i18n="wild.cap">Real mirui, compiled to WebAssembly, rendering the Card on the left. 480 × 320.</figcaption>
+    </div>
+    <figure class="wild-stage reveal" style="--i:1" id="wildStage" data-mode="decl">
+      <div class="ws-leaf vellum">
+        <span class="tag">compose Card</span>
+        <span class="ws-hint" data-i18n="wild.hint">tap the card to fill or empty it</span>
+        <div class="ws-card" id="wildCard" role="button" tabindex="0" aria-label="Card: switch between the template and the call site">
+          <div class="ws-slot ws-head" data-slot="header">
+            <span class="ws-sig" aria-hidden="true"><i>@</i>@header</span>
+            <span class="ws-txt fb">(untitled)</span>
+            <span class="ws-txt fl">ALERT</span>
+          </div>
+          <div class="ws-slot ws-body" data-slot="body">
+            <span class="ws-sig" aria-hidden="true"><i>@</i>@body</span>
+            <span class="ws-txt fb">no body yet</span>
+            <span class="ws-txt fl">@header @body @footer<br>each pick their own slot.</span>
+          </div>
+          <div class="ws-slot ws-foot" data-slot="footer">
+            <span class="ws-sig" aria-hidden="true"><i>@</i>@footer</span>
+            <span class="ws-txt fb" data-i18n="wild.void">empty · no fallback</span>
+            <span class="ws-txt fl">FOOTER SLOT</span>
+          </div>
+        </div>
+      </div>
+      <figcaption><span data-i18n="wild.cap">The Card that casting composes, drawn in place.</span> <a href="https://mirui.rs/?demo=niche" target="_blank" rel="noopener" data-i18n="wild.live">Watch it run in mirui ↗</a></figcaption>
     </figure>
   </div>
 </section>
@@ -440,7 +454,7 @@ pub fn my_ui(input: TokenStream) -> TokenStream {
     <span data-crate-version>v1.10.1</span><span data-crate-downloads></span> ·
     <a href="https://github.com/W-Mai/xrune">github.com/W-Mai/xrune</a> ·
     <a href="book/">English docs</a> ·
-    <a href="book/zh-CN/">中文文档</a> ·
+    <a href="book/zh-CN/">中文魔典</a> ·
     <a href="book/codex.html" data-book="codex.html" data-i18n="foot.codex">Codex of changes</a>
   </p>
 </footer>
