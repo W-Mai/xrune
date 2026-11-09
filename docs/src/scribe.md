@@ -39,6 +39,14 @@ preserved byte-for-byte.
 - **Attribute values, `walk` iterables, `if`/`match` scrutinees, and `on` bodies** use Rust formatting with nested indentation.
 - **`on EventKind` clauses** follow the widget's children block in declaration order. When there are no children, they follow the attrs or enchants. Handler bodies retain their own braces, including empty bodies; callback-form handlers remain bodyless.
 - **Enchants** sit between attrs and body in `[ … ]`, comma-separated.
+- **Childless widgets** print without `{}`: `Text ("x")`, not
+  `Text ("x") {}`.
+- **Sigils and branches** round-trip as written: `$signal` and
+  `${ … }` keep the `$` glued on, `elif` stays `elif`, and `by <key>`
+  and `@@name` are preserved.
+- **Code blocks** (`${ … }` nodes) are formatted as Rust through
+  prettyplease and re-indented to the DSL column; a short
+  single-statement block stays on one line.
 
 ```rust
 # use xrune::ui;

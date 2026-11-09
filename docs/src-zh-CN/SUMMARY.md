@@ -10,6 +10,7 @@
   - [部件节点](casting-syntax/widget.md)
   - [附魔](casting-syntax/enchants.md)
   - [控制流](casting-syntax/control.md)
+  - [`$` 印记](casting-syntax/reactive.md)
   - [`on` 事件咒符](casting-syntax/on.md)
   - [被拒形态](casting-syntax/errors.md)
 

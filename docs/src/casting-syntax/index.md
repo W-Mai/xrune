@@ -1,16 +1,23 @@
 # The Casting Syntax
 
-Every form the `ui! { … }` macro accepts. Six axes:
+Every form the `ui! { … }` macro accepts. Seven axes:
 
-- [Context Area](context.md) — the `:( … :)` header that opens every cast.
+- [Context Area](context.md) — the optional `:( … :)` header that opens
+  a cast.
 - [Widget Nodes](widget.md) — the heart of the language: named or
   positional attrs, optional parens, optional body.
 - [Enchants](enchants.md) — the `[expr, expr, …]` block that attaches
   arbitrary data to a widget.
-- [Control Flow](control.md) — `if`, `walk … with …`, `@niche`, `match`.
+- [Control Flow](control.md) — `if` / `elif` / `else`,
+  `walk … with … by …`, `@niche` / `@@niche`, `match`.
+- [The `$` Sigil](reactive.md) — reactive values (`$signal`,
+  `${ expr }`) and raw Rust code blocks (`${ … }` as a node).
 - [The `on` Handlers](on.md) — event clauses in two forms (B and C),
   body or callback, qualified or bare, with or without args.
 - [Rejected Forms](errors.md) — what the parser refuses, and why.
+
+A cast holds exactly one top-level node; wrap siblings in a container
+widget.
 
 The DSL is **untyped at parse time**. Widget names are arbitrary
 identifiers; attribute values are arbitrary `syn::Expr`. All semantics —

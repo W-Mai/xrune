@@ -6,7 +6,7 @@
 
 ## 师契
 
-`DsRune` 声明 **七** 道方法。**没有任何一道带默认实现**：每一位具象的符文师都得给齐七道。
+`DsRune` 声明 **八** 道方法。**没有任何一道带默认实现**：每一位具象的符文师都得给齐八道。
 
 ```rust,ignore
 pub trait DsRune {
@@ -21,28 +21,46 @@ pub trait DsRune {
         children: &[DsTreeRef],
     );
 
-    fn inscribe_if(&mut self, condition: &syn::Expr, children: &[DsTreeRef]);
+    fn inscribe_if(
+        &mut self,
+        condition: &syn::Expr,
+        reactive: bool,
+        children: &[DsTreeRef],
+        else_branch: Option<&DsTreeRef>,
+    );
 
     fn inscribe_iter(
         &mut self,
         iterable: &syn::Expr,
         variable: &syn::Ident,
+        reactive: bool,
+        key: Option<&syn::Expr>,
         children: &[DsTreeRef],
     );
 
-    fn inscribe_niche(&mut self, name: &syn::Ident, children: &[DsTreeRef]);
+    fn inscribe_niche(&mut self, name: &syn::Ident, is_declaration: bool, children: &[DsTreeRef]);
 
-    fn inscribe_match(&mut self, scrutinee: &syn::Expr, arms: &[DsMatchArm]);
+    fn inscribe_match(&mut self, scrutinee: &syn::Expr, reactive: bool, arms: &[DsMatchArm]);
+
+    fn inscribe_code_block(&mut self, tokens: &proc_macro2::TokenStream);
 
     fn seal(self) -> proc_macro2::TokenStream;
 }
 ```
 
+多出来的参数，带的是咒文在基本形态之外写明的东西：
+
+- `reactive` 在头部写了 `$` 印记时为 `true`（`if $open`、`walk $rows`、`match ${ state.get() }`），见 [`$` 印记](casting-syntax/reactive.md)。
+- `else_branch` 是 `if` 的 `elif` / `else` 链。
+- `key` 是带键 `walk` 的 `by <expr>`。
+- `is_declaration` 区分 `@@name`（插槽声明）与 `@name`（填充）。
+- `inscribe_code_block` 收到 `${ … }` 节点原样的 token。
+
 ## `decipher` 怎么调它们
 
 `decipher(tree, &mut rune)` 遍历 AST，把节点逐一派给 inscribe 方法。要害一句：
 
-> **`decipher` 只对 root 自动下钻。** 其余 inscribe 方法都只收一道 `children`（`inscribe_match` 收的是 `arms`，每个 arm 自带 children），**自己负责往下递归**。
+> **`decipher` 只对 root 和 `else` 的 body 自动下钻。** 其余 inscribe 方法都只收一道 `children`（`inscribe_match` 收的是 `arms`，每个 arm 自带 children），**自己负责往下递归**。
 
 > ⚠ **这是 xrune 最常见的坑。** 如果你的 `inscribe_widget` 收下 `children` 之后**没**调 `decipher(child, self)`，那棵子树会被**静默丢弃**，不报错、不警告，只是输出里突然少了几层节点。所有非 root 的 inscribe 方法都得自己跑那个递归。
 
@@ -67,12 +85,34 @@ fn inscribe_widget(
 }
 ```
 
-`inscribe_if` / `inscribe_iter` / `inscribe_niche` 跟它形态相同：单层 `for child in children`。
+`inscribe_iter` / `inscribe_niche` 跟它形态相同：单层 `for child in children`。`inscribe_code_block` 没有可递归的东西：它是叶子。
+
+`inscribe_if` 多一步：走完自己的 children 后，若有 `else_branch`，把它交回 `decipher`。`elif` 是另一个 `If` 节点，于是 `decipher` 带着这个分支的条件和它自己的 `else_branch` 再调一次 `inscribe_if`；末尾的 `else` 是一个 `Else` 节点，`decipher` 替你走它的 children。
+
+```rust,ignore
+fn inscribe_if(
+    &mut self,
+    condition: &syn::Expr,
+    reactive: bool,
+    children: &[DsTreeRef],
+    else_branch: Option<&DsTreeRef>,
+) {
+    /* … 发出 `if #condition {` … */
+    for child in children {
+        decipher(child, self);
+    }
+    /* … 发出 `}` … */
+
+    if let Some(branch) = else_branch {
+        decipher(branch, self);   // elif → 再进 inscribe_if；else → 走它的 children
+    }
+}
+```
 
 `inscribe_match` 比较特殊：trait 签名只收 `arms: &[DsMatchArm]`，**没**单独的 children slice。每个 arm 自带 `get_children()`，所以要写**双层循环**，外层走 arms，内层走每个 arm 的子树：
 
 ```rust,ignore
-fn inscribe_match(&mut self, scrutinee: &syn::Expr, arms: &[DsMatchArm]) {
+fn inscribe_match(&mut self, scrutinee: &syn::Expr, reactive: bool, arms: &[DsMatchArm]) {
     /* … 发出 match 头 … */
 
     for arm in arms {
@@ -133,7 +173,7 @@ fn inscribe_widget(&mut self, name: &syn::Ident, /* … */ children: &[DsTreeRef
 
 ## 工坊范本：`DefaultRune`
 
-内置的参考符文师就在 [`crates/xrune/src/default_rune.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune/src/default_rune.rs)，是七道方法最干净的现成实现。从头读到尾即可：每个 inscribe 处理器几行而已，parent 压入还原的形态一望即知，`seal` 还出累积好的 `println!` 形 `TokenStream`。
+内置的参考符文师就在 [`crates/xrune/src/default_rune.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune/src/default_rune.rs)，是八道方法最干净的现成实现。从头读到尾即可：每个 inscribe 处理器几行而已，parent 压入还原的形态一望即知，`seal` 还出累积好的 `println!` 形 `TokenStream`。
 
 `DefaultRune` 在仓库里实际有**两份内容相同的实现**：
 
@@ -189,7 +229,7 @@ edition = "2024"
 proc-macro = true
 
 [dependencies]
-xrune = "1.5"
+xrune = "1.10"
 syn = "2"
 proc-macro2 = "1"
 quote = "1"
@@ -219,7 +259,7 @@ pub fn my_ui(input: TokenStream) -> TokenStream {
 }
 ```
 
-宏起一个**自己的名字**（`my_ui`、`bevy_ui`，随意）。`my_rune.rs` 里实现七道 `DsRune` 方法，发出你宿主真正需要的 spawn / render / 任何代码。开发期可以先把 `MyRune::new()` 换成 `xrune::default_rune::DefaultRune::new()`，让自己的宏先跑出 println trace，验证管子接好。
+宏起一个**自己的名字**（`my_ui`、`bevy_ui`，随意）。`my_rune.rs` 里实现八道 `DsRune` 方法，发出你宿主真正需要的 spawn / render / 任何代码。开发期可以先把 `MyRune::new()` 换成 `xrune::default_rune::DefaultRune::new()`，让自己的宏先跑出 println trace，验证管子接好。
 
 下游用户这样写：
 

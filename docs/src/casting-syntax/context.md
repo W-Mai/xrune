@@ -1,6 +1,6 @@
 # Context Area
 
-Every `ui! { … }` block opens with a context header:
+A `ui! { … }` block may open with a context header:
 
 ```rust
 # use xrune::ui;
@@ -17,22 +17,36 @@ ui! {
 ```
 
 `:(` and `:)` are literal token pairs. Inside live one or more attributes
-in the same `name: value` shape used elsewhere in the DSL. Each attribute
-sits on its own line.
+in the same `name: value` shape used elsewhere in the DSL.
+
+## The header is optional
+
+Since 1.10.0 a cast can start straight at its content tree:
+
+```rust
+# use xrune::ui;
+# fn app() {
+ui! {
+    placeholder {}
+}
+# }
+# fn main() {}
+```
+
+Without a header, `DsRoot::get_context_attrs()` is empty and
+`DsRoot::get_parent()` returns the unit expression `()`. Runes that
+build their own parent, such as a template body that spawns its root
+entity locally, skip the header entirely.
 
 ## What `parent` means
 
-`parent` is the **only required** context key. The parser rejects a header
-without it:
+`parent` is the one key xrune itself reads. The rune retrieves its
+expression via `DsRoot::get_parent()`. For `DefaultRune` this is the
+value passed to `inscribe_root`; a real backend typically threads it as
+the spawn-under / mount-on entity for the rest of the cast.
 
-```text
-Root node must have a parent
-```
-
-The rune retrieves the parent expression via `DsRoot::get_parent()`. For
-`DefaultRune` this is the value passed to `inscribe_root`; a real backend
-typically threads it as the spawn-under / mount-on entity for the rest of
-the cast.
+A header that doesn't name `parent` is valid too: `get_parent()` falls
+back to `()`, just as it does without a header.
 
 ## Other keys are rune-defined
 
@@ -62,7 +76,8 @@ rune's job, in `inscribe_root` or in a sealing pass.
 
 ## Multi-line layout
 
-The header always spans multiple lines, with each attribute on its own line:
+With more than one attribute, the header spans multiple lines, one
+attribute per line:
 
 ```rust
 # use xrune::ui;
@@ -87,6 +102,9 @@ Putting two or more attributes on the same line raises a parse error:
 root header must be multi-line — put each context attr on its own line
 ```
 
+A single attribute may share one line with the brackets
+(`:(parent: root:)`); the scribe still prints it on its own line.
+
 Commas between attributes are optional — the shape below is equally valid:
 
 ```rust
@@ -107,5 +125,6 @@ Commas between attributes are optional — the shape below is equally valid:
 
 `DsRoot::parse` in
 [`crates/xrune_nexus/src/ds_node/ds_root.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune_nexus/src/ds_node/ds_root.rs).
-The behaviour above is exercised by `root_header_*` tests in
-`crates/xrune_nexus/src/tests.rs`.
+The behaviour above is exercised by the `root_header_*`,
+`header_optional_no_prefix` and `root_no_header_produces_unit_parent`
+tests in `crates/xrune_nexus/src/tests.rs`.

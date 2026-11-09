@@ -21,8 +21,13 @@
 
     // Simplest way to make mermaid re-render the diagrams in the new theme is via refreshing the page
 
+    // mdbook 0.5 prefixes the theme buttons (`mdbook-theme-ayu`), 0.4 did
+    // not (`ayu`); a missing button must not throw on every page.
+    const themeButton = (name) =>
+        document.getElementById('mdbook-theme-' + name) || document.getElementById(name);
+
     for (const darkTheme of darkThemes) {
-        document.getElementById(darkTheme).addEventListener('click', () => {
+        themeButton(darkTheme)?.addEventListener('click', () => {
             if (lastThemeWasLight) {
                 window.location.reload();
             }
@@ -30,7 +35,7 @@
     }
 
     for (const lightTheme of lightThemes) {
-        document.getElementById(lightTheme).addEventListener('click', () => {
+        themeButton(lightTheme)?.addEventListener('click', () => {
             if (!lastThemeWasLight) {
                 window.location.reload();
             }

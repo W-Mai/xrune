@@ -113,8 +113,9 @@ ui! {
 Things to read out of this:
 
 - The `:( ... :)` block (with `parent: parent` on its own line) is the
-  **context area**. `parent` is the only required key; the rune sees it
-  via `DsRoot::get_parent()`.
+  optional **context area**. `parent` is the one key xrune reads; the
+  rune sees it via `DsRoot::get_parent()`, which returns `()` when the
+  header or the key is absent.
 - `width: 100, height: 100 + A, color: "red"` — attribute values are
   arbitrary `syn::Expr`. `100 + A` is a Rust expression, not a string.
 - `text (content: "hello world") { picker (…) {} }` — children nest. The
@@ -134,8 +135,8 @@ Things to read out of this:
 At expansion time it parses the token stream into a `DsRoot` (the AST root),
 constructs the bundled `DefaultRune`, calls `inscribe_root` with the
 context's `parent` expression, and then runs `decipher` over the children.
-Each visited node — widget, `if`, `walk`, `@niche`, `match` — triggers one
-`inscribe_*` method on the rune. At the end the rune is `seal`ed and its
+Each visited node — widget, `if`, `walk`, `@niche`, `match`, `${ … }` —
+triggers one `inscribe_*` method on the rune. At the end the rune is `seal`ed and its
 accumulated `TokenStream` becomes the macro's output. For `DefaultRune`
 that output is a sequence of `println!` calls, which is why this example
 "runs" without a UI runtime.
