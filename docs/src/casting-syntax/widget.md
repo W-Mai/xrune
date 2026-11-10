@@ -108,6 +108,10 @@ slider (
 The rune decides what to do with each value. There is no compile-time
 schema mapping attr names to types.
 
+A leading `$` marks a value reactive — `label (text: $title)` or
+`bar (width: ${ pick(w.get()) })`. The rune reads the mark as
+`DsAttr::reactive`; see [The `$` Sigil](reactive.md).
+
 ## Children nest as full trees
 
 ```rust
@@ -132,9 +136,10 @@ window (title: "Cast") {
 # fn main() {}
 ```
 
-Each child is itself a `DsTree`, so widgets, `if`, `walk`, `@niche`, and
-`match` can all nest inside another widget's body. The combination is
-unrestricted — *the rune* enforces what's actually meaningful.
+Each child is itself a `DsTree`, so widgets, `if`, `walk`, `@niche`,
+`match` and `${ … }` code blocks can all nest inside another widget's
+body. The combination is unrestricted — *the rune* enforces what's
+actually meaningful.
 
 ## Source-of-truth
 

@@ -8,17 +8,59 @@ already written.
 ## What's currently alive
 
 The shape every other chapter documents — the `DsRune` trait with its
-seven methods, the six `DsNode` variants, the three `on` forms (Form B,
-Form C, callback-form), enchants, niches, match arms, the
+eight methods, the eight `DsNode` variants, the optional `:( … :)`
+header, `if` / `elif` / `else`, the `$` sigil, keyed `walk … by …`,
+`@` / `@@` niches, `${ … }` code blocks, the three `on` forms (Form B,
+Form C, callback-form), enchants, match arms, the
 `name: Option<syn::Ident>` attr shape — is the shape that ships today
-on crates.io. Code written against the current docs compiles against
-the current crates.
+on crates.io (1.10). Code written against the current docs compiles
+against the current crates.
 
 ## Migration notes by surface
 
 If you have an existing rune from an earlier release, here's what's
 changed underneath you. Each entry assumes you're on the previous
-shape and need to move to the current one.
+shape and need to move to the current one. Every change below is a new
+parameter or a new method, so the compiler points at each spot to
+update.
+
+### `inscribe_if` (1.7)
+
+Gained `reactive: bool` and `else_branch: Option<&DsTreeRef>`. After
+emitting the `if` body, pass the branch back to `decipher(branch, self)`
+when it is `Some`; an `elif` re-enters `inscribe_if` and an `else`
+walks its own children. A rune that ignores `else_branch` silently
+drops every `elif` / `else` body.
+
+### `inscribe_iter` and `inscribe_match` (1.7, 1.9)
+
+Both gained `reactive: bool` in 1.7. `inscribe_iter` also gained
+`key: Option<&syn::Expr>` in 1.9, the `by <expr>` of a keyed walk.
+Ignoring either keeps the old behaviour.
+
+### `DsAttr::reactive` (1.8)
+
+`DsAttr` grew a public `reactive: bool` field. Reading attrs is
+unaffected; code that builds a `DsAttr` with a struct literal must set
+it.
+
+### `inscribe_niche` (1.10)
+
+Gained `is_declaration: bool` — `true` for `@@name`, `false` for
+`@name`. Niche bodies are optional now, so `children` may be empty.
+
+### `inscribe_code_block` (1.10)
+
+New method, no default implementation: every rune must provide it.
+It receives the verbatim tokens of a `${ … }` node; splice them into
+the output, or do nothing if your rune has no use for raw Rust.
+
+### The optional header (1.10)
+
+`:( … :)` may be omitted, and a header may leave out `parent`. In both
+cases `get_parent()` returns `()` instead of the parser rejecting the
+cast. A rune that relied on that rejection must now handle a unit
+parent.
 
 ### `on EventKind` handlers
 
@@ -68,6 +110,7 @@ example code, it's pre-current.
 | Removed | Replaced by |
 | --- | --- |
 | `DsRune::inscribe_on` method | `on_handlers: &[DsOn]` on `inscribe_widget` |
+| The `Root node must have a parent` error | An optional header; `get_parent()` falls back to `()` |
 | `DsNode::On` variant | folded into the widget |
 | `DsTreeToTokens` trait | the `DsRune` codegen interface |
 | `ds_traverse` module | `xrune::ds_rune::decipher::decipher` |

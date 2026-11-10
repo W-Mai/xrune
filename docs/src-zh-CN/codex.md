@@ -4,11 +4,35 @@
 
 ## 现行的形态
 
-其他章节描述的那些形态，就是现在 crates.io 上发布的形态：`DsRune` trait 的七道方法、六个 `DsNode` 变体、三种 `on` 形态（B、C、回调）、附魔、壁龛、match arm、`name: Option<syn::Ident>` 这样的属性形态。照本文档写的代码，如今即可编过。
+其他章节描述的那些形态，就是现在 crates.io 上发布的形态（1.10）：`DsRune` trait 的八道方法、八个 `DsNode` 变体、可省的 `:( … :)` 上下文头、`if` / `elif` / `else`、`$` 印记、带键的 `walk … by …`、`@` / `@@` 壁龛、`${ … }` 代码块、三种 `on` 形态（B、C、回调）、附魔、match arm、`name: Option<syn::Ident>` 这样的属性形态。照本文档写的代码，如今即可编过。
 
 ## 按接口面拆分的迁移笔记
 
-下面每条都假定你手上是上一种形态、需要迁到现行形态。
+下面每条都假定你手上是上一种形态、需要迁到现行形态。下列改动都是新增参数或新增方法，编译器会逐处指给你看。
+
+### `inscribe_if`（1.7）
+
+新增 `reactive: bool` 与 `else_branch: Option<&DsTreeRef>`。发完 `if` 的 body 后，若为 `Some`，把分支交回 `decipher(branch, self)`：`elif` 会再进 `inscribe_if`，`else` 会走它自己的 children。不理会 `else_branch` 的符文师会悄无声息地丢掉所有 `elif` / `else` 的 body。
+
+### `inscribe_iter` 与 `inscribe_match`（1.7、1.9）
+
+两者在 1.7 都新增了 `reactive: bool`。`inscribe_iter` 在 1.9 又新增 `key: Option<&syn::Expr>`，即带键 walk 的 `by <expr>`。不理会它们，行为与从前一致。
+
+### `DsAttr::reactive`（1.8）
+
+`DsAttr` 多了公开字段 `reactive: bool`。读属性不受影响；用 struct 字面量构造 `DsAttr` 的代码要补上这个字段。
+
+### `inscribe_niche`（1.10）
+
+新增 `is_declaration: bool`：`@@name` 为 `true`，`@name` 为 `false`。壁龛的 body 现在可省，所以 `children` 可能为空。
+
+### `inscribe_code_block`（1.10）
+
+新方法，没有默认实现：每位符文师都得提供。它收到 `${ … }` 节点原样的 token；拼进输出即可，用不上原样 Rust 的符文师什么都不做也行。
+
+### 可省的上下文头（1.10）
+
+`:( … :)` 可以不写，上下文头里也可以不写 `parent`。这两种情况下 `get_parent()` 都返回 `()`，parser 不再拒收。依赖那条拒收的符文师，现在要处理单元 parent。
 
 ### `on EventKind` 处理器
 
@@ -41,6 +65,7 @@
 | 已删除 | 替代 |
 | --- | --- |
 | `DsRune::inscribe_on` 方法 | `inscribe_widget` 上的 `on_handlers: &[DsOn]` |
+| `Root node must have a parent` 报错 | 上下文头可省；`get_parent()` 回落为 `()` |
 | `DsNode::On` 变体 | 折进部件 |
 | `DsTreeToTokens` trait | `DsRune` codegen 接口 |
 | `ds_traverse` 模块 | `xrune::ds_rune::decipher::decipher` |

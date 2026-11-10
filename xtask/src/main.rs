@@ -18,12 +18,14 @@ fn run() -> Result {
         "test" => cmd_test(),
         "lint" => cmd_lint(),
         "doctest" => cmd_doctest(),
+        "forge" => cmd_forge(),
         "bump" => cmd_bump(args.get(1).map(|s| s.as_str()).unwrap_or("")),
         "publish" => cmd_publish(args.iter().any(|a| a == "--dry-run")),
         "release" => cmd_release(),
+        "site" => cmd_site(&args[1..]),
         _ => {
             eprintln!(
-                "usage: cargo xtask <ci|build|test|lint|doctest|bump <major|minor|patch>|publish [--dry-run]|release>"
+                "usage: cargo xtask <ci|build|test|lint|doctest|forge|bump <major|minor|patch>|publish [--dry-run]|release|site [--out <dir>] [--book]>"
             );
             std::process::exit(1);
         }
@@ -36,6 +38,7 @@ fn cmd_ci() -> Result {
         ("test", cmd_test),
         ("lint", cmd_lint),
         ("doctest", cmd_doctest),
+        ("forge", cmd_forge),
     ] {
         println!("\n=== xtask: {name} ===");
         step()?;
@@ -58,8 +61,125 @@ fn cmd_doctest() -> Result {
     Ok(())
 }
 
+/// The Forge has its own workspace (it targets wasm32), so the
+/// workspace-wide build, test and lint steps never reach it.
+fn cmd_forge() -> Result {
+    let forge = format!("{}/docs/forge", project_root());
+    run_cmd_in(
+        "cargo",
+        &["+stable", "clippy", "--all-targets", "--", "-D", "warnings"],
+        &forge,
+    )?;
+    run_cmd_in("cargo", &["+stable", "fmt", "--check"], &forge)?;
+    run_cmd_in("cargo", &["test"], &forge)
+}
+
 fn cmd_build() -> Result {
     cargo(&["build", "--workspace"])
+}
+
+/// Assemble the published site: the landing page, its fonts and the Forge
+/// (the real parser compiled to WebAssembly); with `--book`, both mdBook
+/// trees as well. The docs workflow deploys exactly this directory.
+fn cmd_site(args: &[String]) -> Result {
+    use std::path::{Path, PathBuf};
+
+    let root = project_root();
+    let out: PathBuf = match args.iter().position(|a| a == "--out") {
+        Some(i) => {
+            let p = PathBuf::from(args.get(i + 1).ok_or("--out needs a directory")?);
+            if p.is_absolute() {
+                p
+            } else {
+                std::env::current_dir()?.join(p)
+            }
+        }
+        None => Path::new(&root).join("target/site"),
+    };
+    let with_book = args.iter().any(|a| a == "--book");
+
+    if out.exists() {
+        std::fs::remove_dir_all(&out)?;
+    }
+    std::fs::create_dir_all(out.join("fonts"))?;
+    std::fs::create_dir_all(out.join("forge"))?;
+
+    println!("  → landing page");
+    copy_dir(&Path::new(&root).join("docs/landing"), &out)?;
+    for entry in std::fs::read_dir(Path::new(&root).join("docs/theme/fonts"))? {
+        let path = entry?.path();
+        if path.extension().is_some_and(|e| e == "woff2")
+            && let Some(name) = path.file_name()
+        {
+            std::fs::copy(&path, out.join("fonts").join(name))?;
+        }
+    }
+
+    println!("  → the Forge (xrune parser → wasm32-unknown-unknown)");
+    let forge = format!("{root}/docs/forge");
+    run_cmd_in(
+        "cargo",
+        &["build", "--release", "--target", "wasm32-unknown-unknown"],
+        &forge,
+    )
+    .map_err(|e| format!("{e}\n  hint: rustup target add wasm32-unknown-unknown"))?;
+    std::fs::copy(
+        format!("{forge}/target/wasm32-unknown-unknown/release/xrune_forge.wasm"),
+        out.join("forge/xrune_forge.wasm"),
+    )?;
+
+    if with_book {
+        let dest = |sub: &str| out.join(sub).to_string_lossy().into_owned();
+        let en = dest("book");
+        let zh = dest("book/zh-CN");
+        run_cmd_env(
+            "mdbook",
+            &["build", "docs", "-d", &en],
+            &[("MDBOOK_OUTPUT__HTML__SITE_URL", "/book/")],
+        )?;
+        run_cmd_env(
+            "mdbook",
+            &["build", "docs", "-d", &zh],
+            &[
+                ("MDBOOK_BOOK__SRC", "src-zh-CN"),
+                ("MDBOOK_BOOK__LANGUAGE", "zh-CN"),
+                ("MDBOOK_OUTPUT__HTML__SITE_URL", "/book/zh-CN/"),
+            ],
+        )?;
+    }
+
+    std::fs::write(out.join(".nojekyll"), "")?;
+    println!("  ✅ site assembled in {}", out.display());
+    Ok(())
+}
+
+fn copy_dir(from: &std::path::Path, to: &std::path::Path) -> Result {
+    std::fs::create_dir_all(to)?;
+    for entry in std::fs::read_dir(from)? {
+        let entry = entry?;
+        let target = to.join(entry.file_name());
+        if entry.file_type()?.is_dir() {
+            copy_dir(&entry.path(), &target)?;
+        } else {
+            std::fs::copy(entry.path(), target)?;
+        }
+    }
+    Ok(())
+}
+
+fn run_cmd_env(cmd: &str, args: &[&str], env: &[(&str, &str)]) -> Result {
+    println!("  → {cmd} {}", args.join(" "));
+    let status = Command::new(cmd)
+        .args(args)
+        .envs(env.iter().copied())
+        .current_dir(project_root())
+        .status()
+        .map_err(|e| format!("failed to run {cmd}: {e}"))?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(format!("{cmd} {} failed", args.join(" ")).into())
+    }
 }
 
 fn cmd_test() -> Result {

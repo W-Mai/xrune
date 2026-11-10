@@ -14,9 +14,14 @@ xrune/
 │  ├─ xrune-incant     ← proc-macro: `ui! { … }`
 │  ├─ xrune            ← umbrella: re-exports nexus + ui!, plus default_rune
 │  └─ xrune-fmt        ← CLI binary: the scribe
+├─ docs/
+│  ├─ src/, src-zh-CN/ ← this book, in English and Chinese
+│  ├─ landing/         ← the landing page at the site root
+│  ├─ forge/           ← the Forge: the parser compiled to wasm32 (own workspace)
+│  └─ test/            ← throwaway crate the doctest step compiles
 ├─ examples/
 │  └─ example0         ← canonical hello-world fixture
-└─ xtask/              ← CI/build/test/lint/doctest/bump/publish/release
+└─ xtask/              ← CI/build/test/lint/doctest/forge/site/bump/publish/release
 ```
 
 All five published crates live on one workspace and ship one moving
@@ -29,11 +34,12 @@ only to drive the workspace itself.
 ## `cargo xtask` commands
 
 ```text
-cargo xtask <ci|build|test|lint|doctest|bump <level>|publish [--dry-run]|release>
+cargo xtask <ci|build|test|lint|doctest|forge|site [--out <dir>] [--book]|bump <level>|publish [--dry-run]|release>
 ```
 
-- **`ci`** — `build` + `test` + `lint` + `doctest`, in that order.
-  This is what `.github/workflows/ci.yml` runs. Locally green = CI green.
+- **`ci`** — `build` + `test` + `lint` + `doctest` + `forge`, in that
+  order. This is what `.github/workflows/ci.yml` runs. Locally green =
+  CI green.
 - **`build`** — `cargo build --workspace`.
 - **`test`** — `cargo test --workspace`.
 - **`lint`** — `cargo +stable clippy --workspace -- -D warnings`,
@@ -42,6 +48,15 @@ cargo xtask <ci|build|test|lint|doctest|bump <level>|publish [--dry-run]|release
 - **`doctest`** — extract every ` ```rust ` block from `docs/src/` and
   `docs/src-zh-CN/` into a throwaway test crate at `docs/test/` and
   `cargo build --tests`. Catches drift between docs and reality.
+- **`forge`** — clippy (`-D warnings`), `fmt --check` and the tests of
+  `docs/forge`. The Forge is its own workspace because it targets
+  wasm32, so the workspace-wide steps never reach it.
+- **`site [--out <dir>] [--book]`** — assemble the published site into
+  `target/site` (or `<dir>`): the landing page and its fonts, the Forge
+  built for `wasm32-unknown-unknown`, and with `--book` both mdBook
+  trees. `.github/workflows/docs.yml` deploys exactly this; serve the
+  directory to preview the site locally. Needs
+  `rustup target add wasm32-unknown-unknown`.
 - **`bump <major|minor|patch>`** — rewrite the version in every
   `Cargo.toml` (workspace + the five `version = "=X.Y.Z"` pins under
   `[workspace.dependencies]`). Hand-editing the version is forbidden.
@@ -71,3 +86,4 @@ cargo xtask <ci|build|test|lint|doctest|bump <level>|publish [--dry-run]|release
 - Workspace manifest: [`Cargo.toml`](https://github.com/W-Mai/xrune/blob/main/Cargo.toml)
 - xtask: [`xtask/src/main.rs`](https://github.com/W-Mai/xrune/blob/main/xtask/src/main.rs)
 - CI: [`.github/workflows/ci.yml`](https://github.com/W-Mai/xrune/blob/main/.github/workflows/ci.yml)
+- Site deploy: [`.github/workflows/docs.yml`](https://github.com/W-Mai/xrune/blob/main/.github/workflows/docs.yml)

@@ -37,7 +37,7 @@ quick way to find your bearings:
 > Typed-builder DSLs lock the surface to one back-end and give you
 > safety in exchange. xrune does the opposite — it locks the *shape*
 > of casting (one parser, one tree, one walk) and lets the back-end
-> be anything you can fit through the seven-method `DsRune` trait.
+> be anything you can fit through the eight-method `DsRune` trait.
 
 Both are valid trade-offs. xrune is the right tool when "what does a
 widget actually do?" is itself a moving question.

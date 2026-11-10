@@ -8,8 +8,8 @@ This chapter walks the trait method by method, then reads the bundled
 
 ## The trait
 
-`DsRune` declares **seven** methods. None has a default implementation —
-every concrete rune must provide all seven.
+`DsRune` declares **eight** methods. None has a default implementation —
+every concrete rune must provide all eight.
 
 ```rust,ignore
 pub trait DsRune {
@@ -24,32 +24,53 @@ pub trait DsRune {
         children: &[DsTreeRef],
     );
 
-    fn inscribe_if(&mut self, condition: &syn::Expr, children: &[DsTreeRef]);
+    fn inscribe_if(
+        &mut self,
+        condition: &syn::Expr,
+        reactive: bool,
+        children: &[DsTreeRef],
+        else_branch: Option<&DsTreeRef>,
+    );
 
     fn inscribe_iter(
         &mut self,
         iterable: &syn::Expr,
         variable: &syn::Ident,
+        reactive: bool,
+        key: Option<&syn::Expr>,
         children: &[DsTreeRef],
     );
 
-    fn inscribe_niche(&mut self, name: &syn::Ident, children: &[DsTreeRef]);
+    fn inscribe_niche(&mut self, name: &syn::Ident, is_declaration: bool, children: &[DsTreeRef]);
 
-    fn inscribe_match(&mut self, scrutinee: &syn::Expr, arms: &[DsMatchArm]);
+    fn inscribe_match(&mut self, scrutinee: &syn::Expr, reactive: bool, arms: &[DsMatchArm]);
+
+    fn inscribe_code_block(&mut self, tokens: &proc_macro2::TokenStream);
 
     fn seal(self) -> proc_macro2::TokenStream;
 }
 ```
+
+The extra parameters carry what the casting said beyond the bare shape:
+
+- `reactive` is `true` when the head was written with the `$` sigil
+  (`if $open`, `walk $rows`, `match ${ state.get() }`); see
+  [The `$` Sigil](casting-syntax/reactive.md).
+- `else_branch` holds the `elif` / `else` chain of an `if`.
+- `key` is the `by <expr>` of a keyed `walk`.
+- `is_declaration` tells `@@name` (a slot declaration) from `@name` (a
+  fill).
+- `inscribe_code_block` receives the verbatim tokens of a `${ … }` node.
 
 ## How `decipher` calls them
 
 `decipher(tree, &mut rune)` walks the AST and dispatches inscribe methods.
 The crucial detail:
 
-> **`decipher` only auto-recurses into the root.** Every other inscribe
-> method receives a `children` slice (or, for `inscribe_match`, an `arms`
-> slice where each arm carries its own children) and is responsible for
-> recursing itself.
+> **`decipher` only auto-recurses into the root and into an `else`
+> body.** Every other inscribe method receives a `children` slice (or,
+> for `inscribe_match`, an `arms` slice where each arm carries its own
+> children) and is responsible for recursing itself.
 
 > ⚠ **This is xrune's most common foot-gun.** If your `inscribe_widget`
 > takes `children` and forgets to call `decipher(child, self)`, the
@@ -77,8 +98,34 @@ fn inscribe_widget(
 }
 ```
 
-`inscribe_if`, `inscribe_iter`, and `inscribe_niche` follow the same
-single-loop shape.
+`inscribe_iter` and `inscribe_niche` follow the same single-loop shape.
+`inscribe_code_block` has nothing to recurse into: it is a leaf.
+
+`inscribe_if` adds one step. After its own children it hands the
+`else_branch`, if any, back to `decipher`. An `elif` arrives as another
+`If` node, so `decipher` calls `inscribe_if` again with that branch's
+condition and its own `else_branch`; a terminal `else` arrives as an
+`Else` node, whose children `decipher` walks for you.
+
+```rust,ignore
+fn inscribe_if(
+    &mut self,
+    condition: &syn::Expr,
+    reactive: bool,
+    children: &[DsTreeRef],
+    else_branch: Option<&DsTreeRef>,
+) {
+    /* … emit `if #condition {` … */
+    for child in children {
+        decipher(child, self);
+    }
+    /* … emit `}` … */
+
+    if let Some(branch) = else_branch {
+        decipher(branch, self);   // elif → inscribe_if again; else → its children
+    }
+}
+```
 
 `inscribe_match` is the exception. Its signature takes `arms: &[DsMatchArm]`
 **only** — there is no separate `children` slice. Each arm carries its
@@ -86,7 +133,7 @@ own `get_children()`, so the rune writes a **two-level loop**: outer over
 arms, inner over each arm's subtree.
 
 ```rust,ignore
-fn inscribe_match(&mut self, scrutinee: &syn::Expr, arms: &[DsMatchArm]) {
+fn inscribe_match(&mut self, scrutinee: &syn::Expr, reactive: bool, arms: &[DsMatchArm]) {
     /* … emit match header … */
 
     for arm in arms {
@@ -163,7 +210,7 @@ touching globals.
 
 The bundled reference rune lives in
 [`crates/xrune/src/default_rune.rs`](https://github.com/W-Mai/xrune/blob/main/crates/xrune/src/default_rune.rs)
-and is the cleanest existing implementation of the seven methods. Read
+and is the cleanest existing implementation of the eight methods. Read
 it end-to-end — every inscribe handler is a few lines, the parent
 push/pop idiom is in plain sight, and `seal` returns the accumulated
 `println!`-shaped `TokenStream`.
@@ -238,7 +285,7 @@ edition = "2024"
 proc-macro = true
 
 [dependencies]
-xrune = "1.5"
+xrune = "1.10"
 syn = "2"
 proc-macro2 = "1"
 quote = "1"
@@ -274,7 +321,7 @@ pub fn my_ui(input: TokenStream) -> TokenStream {
 ```
 
 Pick your own macro name (`my_ui`, `bevy_ui`, whatever). Inside
-`my_rune.rs` you implement the seven `DsRune` methods, emitting the
+`my_rune.rs` you implement the eight `DsRune` methods, emitting the
 real spawn / render / whatever code your host actually needs. While
 prototyping you can swap `MyRune::new()` for
 `xrune::default_rune::DefaultRune::new()` to get the println trace

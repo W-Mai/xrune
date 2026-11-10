@@ -110,8 +110,9 @@ ui! {
 
 从这一段读出来的事：
 
-- `:( ... :)` 块（`parent: parent` 单独占一行）是**上下文区**。`parent`
-  是唯一必填键；符文师通过 `DsRoot::get_parent()` 取到它。
+- `:( ... :)` 块（`parent: parent` 单独占一行）是可省的**上下文区**。
+  `parent` 是 xrune 唯一会读的键；符文师通过 `DsRoot::get_parent()`
+  取到它，上下文头或这个键缺席时返回 `()`。
 - `width: 100, height: 100 + A, color: "red"`：属性值是任意
   `syn::Expr`。`100 + A` 是一个 Rust 表达式，不是字符串。
 - `text (content: "hello world") { picker (…) {} }`：子节点嵌套。
@@ -128,7 +129,7 @@ ui! {
 crate 出的一个过程宏。展开时它把 token 流解析成 `DsRoot`（AST 根），
 构造内置 `DefaultRune`，用上下文里的 `parent` 表达式调用 `inscribe_root`，
 然后对子树跑 `decipher`。每个被访问的节点，widget / `if` / `walk` /
-`@niche` / `match`，触发 rune 的某一个 `inscribe_*` 方法。最后 rune
+`@niche` / `match` / `${ … }`，触发 rune 的某一个 `inscribe_*` 方法。最后 rune
 被 `seal`，它累积的 `TokenStream` 就成了宏的输出。对 `DefaultRune` 而言
 这个输出是一串 `println!`，此例之所以不挂 UI 运行时也能
 「跑」，正是此故。

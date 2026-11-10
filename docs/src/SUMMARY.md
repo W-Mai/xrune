@@ -10,6 +10,7 @@
   - [Widget Nodes](casting-syntax/widget.md)
   - [Enchants](casting-syntax/enchants.md)
   - [Control Flow](casting-syntax/control.md)
+  - [The `$` Sigil](casting-syntax/reactive.md)
   - [The `on` Handlers](casting-syntax/on.md)
   - [Rejected Forms](casting-syntax/errors.md)
 

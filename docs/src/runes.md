@@ -14,6 +14,7 @@ pub struct DsTree {
     parent: Option<DsTreeRef>,
     node: DsNode,
     children: Vec<DsTreeRef>,
+    else_branch: Option<DsTreeRef>,
 }
 ```
 
@@ -24,6 +25,8 @@ pub struct DsTree {
 - `children` — sub-trees. Empty for leaf forms; non-empty for widget
   bodies, control bodies, niche bodies. Match arm children live on the
   arm, not here.
+- `else_branch` — only on `If` trees: the next link of an
+  `elif` / `else` chain, or `None`.
 
 `DsTreeRef` is what `DsRef` mints around `DsTree`: an
 `Rc<RefCell<DsTree>>` newtype. Borrow it with `.borrow()` /
@@ -37,9 +40,10 @@ Read access on a borrowed `DsTree`:
 | --- | --- | --- |
 | `get_node()` | `&DsNode` | Pattern-match to figure out which kind of node you have. |
 | `get_children()` | `&[DsTreeRef]` | Iterate when you recurse via `decipher(child, self)`. |
+| `get_else_branch()` | `Option<&DsTreeRef>` | The `elif` / `else` link of an `If` tree. `inscribe_if` already receives it. |
 | `set_parent(parent)` | `()` | Parser-only. Backends don't call this. |
 
-## `DsNode` — six variants
+## `DsNode` — eight variants
 
 ```rust,ignore
 pub enum DsNode {
@@ -49,21 +53,28 @@ pub enum DsNode {
     Iter(DsIter),
     Niche(DsNiche),
     Match(DsMatch),
+    CodeBlock(DsCodeBlock),
+    Else,
 }
 ```
 
 You almost never match on `DsNode` directly — `decipher` already
-dispatches each variant to the right `inscribe_*` method. The variant
-names map one-to-one to the trait:
+dispatches each variant to the right `inscribe_*` method:
 
 | `DsNode` variant | Dispatched to | Reaches the rune as |
 | --- | --- | --- |
 | `Root(expr)` | `inscribe_root` | `parent_expr: &syn::Expr` |
 | `Widget(w)` | `inscribe_widget` | full widget unpacked into 5 args |
-| `If(node)` | `inscribe_if` | `condition: &syn::Expr` + `children` |
-| `Iter(node)` | `inscribe_iter` | `iterable` + `variable` + `children` |
-| `Niche(node)` | `inscribe_niche` | `name: &syn::Ident` + `children` |
-| `Match(node)` | `inscribe_match` | `scrutinee: &syn::Expr` + `arms: &[DsMatchArm]` |
+| `If(node)` | `inscribe_if` | `condition` + `reactive` + `children` + `else_branch` |
+| `Iter(node)` | `inscribe_iter` | `iterable` + `variable` + `reactive` + `key` + `children` |
+| `Niche(node)` | `inscribe_niche` | `name` + `is_declaration` + `children` |
+| `Match(node)` | `inscribe_match` | `scrutinee` + `reactive` + `arms: &[DsMatchArm]` |
+| `CodeBlock(code)` | `inscribe_code_block` | `tokens: &proc_macro2::TokenStream` |
+| `Else` | no method of its own | `decipher` walks its children |
+
+`Else` only ever appears as the last link of an `if` chain, reached
+through `else_branch`; an `elif` is an ordinary `If` node in that
+position.
 
 There is **no** `On` variant — `on EventKind { … }` clauses fold into
 the widget they attach to. They reach the rune as the
@@ -71,8 +82,8 @@ the widget they attach to. They reach the rune as the
 node.
 
 The peek-side enum `DsNodeType` is a parser-only thing
-(`Widget` / `If` / `Iter` / `Niche` / `Match`) — same names minus
-`Root`. Backends never see it.
+(`Widget` / `If` / `Iter` / `Niche` / `Match` / `CodeBlock`) — the same
+names minus `Root` and `Else`. Backends never see it.
 
 ## `DsRoot` — the cast envelope
 
@@ -96,12 +107,15 @@ decipher(&root.get_content(), &mut rune);
 ```
 
 - `get_parent()` returns a clone of the `parent:` value from the
-  `:( … :)` header, suitable for splicing into emitted code.
+  `:( … :)` header, suitable for splicing into emitted code. Without a
+  header, or without a `parent` key, it returns the unit expression
+  `()`.
 - `get_content()` returns the body of the cast — the actual
   `DsTreeRef` `decipher` walks.
 - `get_context_attrs()` returns **every** attr in the header, including
-  `parent` itself. Use it when your rune defines extra context keys
-  (`world`, `theme`, …) and wants to read them before the walk.
+  `parent` itself, and an empty slice when there is no header. Use it
+  when your rune defines extra context keys (`world`, `theme`, …) and
+  wants to read them before the walk.
 
 `DsRoot` also implements `Deref<Target = DsTreeRef>`, but that's a
 parser-side convenience; backends use the explicit getters.
@@ -132,6 +146,7 @@ like `xrune-fmt`).
 pub struct DsAttr {
     pub name: Option<syn::Ident>,
     pub value: syn::Expr,
+    pub reactive: bool,
 }
 
 impl DsAttr {
@@ -147,6 +162,10 @@ pub struct DsAttrs {
   for positional attrs. `name_str()` is the matching-friendly version.
 - `value: syn::Expr` is whatever the user wrote — match on it as you
   would any `syn::Expr`, or splice it via `quote!` into emitted code.
+  A `$` sigil is already stripped; `${ … }` arrives as an
+  `Expr::Block`.
+- `reactive: bool` is `true` when the value was written `$expr` or
+  `${ … }`.
 
 ### `DsOn` (event handlers)
 
@@ -174,38 +193,61 @@ impl DsOn {
 ```rust,ignore
 impl DsIf {
     pub fn get_condition(&self) -> &syn::Expr;
+    pub fn is_reactive(&self) -> bool;
 }
 ```
 
-Children come from the surrounding `DsTree`'s `get_children()`.
+Children come from the surrounding `DsTree`'s `get_children()`, the
+`elif` / `else` chain from its `get_else_branch()`.
 
-### `DsIter` (`walk … with …`)
+### `DsIter` (`walk … with … by …`)
 
 ```rust,ignore
 impl DsIter {
     pub fn get_iterable(&self) -> &syn::Expr;
     pub fn get_variable(&self) -> &syn::Ident;
+    pub fn is_reactive(&self) -> bool;
+    pub fn get_key(&self) -> Option<&syn::Expr>;
 }
 ```
 
 `iterable` is what comes after `walk`; `variable` is the binding after
-`with`. The body is again on the surrounding `DsTree`.
+`with`; `key` is the optional `by <expr>`. The body is again on the
+surrounding `DsTree`.
 
-### `DsNiche` (`@name { … }`)
+### `DsNiche` (`@name` / `@@name`)
 
 ```rust,ignore
 impl DsNiche {
     pub fn get_name(&self) -> &syn::Ident;
+    pub fn is_declaration(&self) -> bool;
 }
 ```
 
-Single-segment ident only — `@foo::bar` is a parse error.
+`is_declaration()` is `true` for `@@name`, `false` for `@name`. The
+body is optional; when present its children sit on the surrounding
+`DsTree`. Single-segment ident only — `@foo::bar` is a parse error.
+
+### `DsCodeBlock` (`${ … }`)
+
+```rust,ignore
+impl DsCodeBlock {
+    pub fn get_tokens(&self) -> &proc_macro2::TokenStream;
+    pub fn get_source_text(&self) -> Option<&str>;
+}
+```
+
+`get_tokens()` is what `inscribe_code_block` receives. `get_source_text()`
+is the original text between the braces, whitespace included, when the
+compiler provides it; `xrune-fmt` uses it to round-trip multi-line
+blocks, codegen runes ignore it.
 
 ### `DsMatch` and `DsMatchArm`
 
 ```rust,ignore
 impl DsMatch {
     pub fn get_scrutinee(&self) -> &syn::Expr;
+    pub fn is_reactive(&self) -> bool;
     pub fn get_arms(&self) -> &[DsMatchArm];
 }
 
@@ -223,10 +265,10 @@ example in [Binding the Rune § Hosting xrune](binding.md).
 
 ## Custom keywords
 
-`walk`, `with`, and `on` are registered as `syn::custom_keyword!` —
-they cannot be used as widget names, attr names, or any other
-identifier. The parser dispatches them before the widget peek, so
-`on Foo` is not a widget called `on`.
+`walk`, `with`, `by`, `on` and `elif` are registered as
+`syn::custom_keyword!`, so none of them can name a widget. The parser
+dispatches them before the widget peek, so `on Foo` is not a widget
+called `on`. Attribute names are unaffected: `row (by: 1)` parses.
 
 ## What you don't need to know
 
@@ -246,6 +288,8 @@ itself:
 Everything above is in `crates/xrune_nexus/src/ds_node/`. One file per
 type: `ds_root.rs`, `ds_widget.rs`, `ds_attr.rs`, `ds_on.rs`,
 `ds_if.rs`, `ds_iter.rs`, `ds_niche.rs`, `ds_match.rs`,
-`node_enum.rs`. The DsRune trait that consumes them is in
+`ds_code_block.rs`, `node_enum.rs`; the `$` handling is in
+`reactive.rs` and the `elif` / `else` chain in `mod.rs`. The DsRune
+trait that consumes them is in
 `crates/xrune_nexus/src/ds_rune/mod.rs`; the `decipher` walker beside
 it.
