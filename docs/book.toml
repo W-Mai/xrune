@@ -9,6 +9,8 @@ default-theme = "tome"
 preferred-dark-theme = "tome"
 git-repository-url = "https://github.com/W-Mai/xrune"
 edit-url-template = "https://github.com/W-Mai/xrune/edit/main/docs/{path}"
+# The Grimoire's skin sits on mdBook's stock CSS; theme/head.hbs adds its markup.
+additional-css = ["theme/grimoire.css"]
 additional-js = ["theme/mermaid.min.js", "theme/mermaid-init.js"]
 
 # elasticlunr drops CJK; head.hbs injects Pagefind.

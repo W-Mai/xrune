@@ -46,12 +46,20 @@ jobs:
       - name: Assemble the site
         run: cargo xtask site --out pages --book
 
+      # The extended build splits Chinese into words. The plain one keeps each
+      # unbroken run of hanzi as a single word, so 中文 queries miss most pages.
       - name: Install Pagefind
         run: |
-          curl -fsSL https://github.com/CloudCannon/pagefind/releases/download/v1.4.0/pagefind-v1.4.0-x86_64-unknown-linux-musl.tar.gz \
+          curl -fsSL https://github.com/CloudCannon/pagefind/releases/download/v1.4.0/pagefind_extended-v1.4.0-x86_64-unknown-linux-musl.tar.gz \
             | tar -xz -C /usr/local/bin
-      - run: pagefind --site pages/book
-      - run: pagefind --site pages/book/zh-CN
+      # Every page carries the menu bar and the shortcut help outside <main>;
+      # left in, "navy" or "shortcuts" matches every page.
+      - name: Index the search
+        run: |
+          for book in pages/book pages/book/zh-CN; do
+            pagefind_extended --site "$book" \
+              --exclude-selectors '#mdbook-menu-bar' --exclude-selectors '#mdbook-help-container'
+          done
 
       - uses: actions/upload-pages-artifact@v3
         with:

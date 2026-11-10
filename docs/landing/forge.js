@@ -1,32 +1,9 @@
 /* III · The Forge. The real xrune parser (docs/forge, compiled to
  * WebAssembly) deciphers the casting on every keystroke; three runes inscribe
  * it: TraceRune (the decipher walk), the bundled DefaultRune, and the scribe.
- * Also hosts the syntax highlighter every code block on the page uses. */
+ * Paints with XRUNE.hl from pigments.js, as every code block on the page does. */
 (function () {
-  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-
-  // ---- highlighting: manuscript pigments for DSL and Rust
-  var DSL = {
-    re: /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*")|(@@?[A-Za-z_]\w*|\$[A-Za-z_]\w*)|(\$\{|\$|:\(|:\))|(\b(?:walk|with|by|if|elif|else|match|on)\b)|(\b\d[\d_]*(?:\.\d+)?\b)|(\b[A-Z]\w*\b)|(\b[a-z_]\w*!)|(\b[a-z_]\w*(?=\s*[({[]))|(\b[a-z_]\w*(?=\s*:(?!:)))|(=>|[{}()[\],;:.|&=+\-*/<>!?])/g,
-    cls: ['c', 's', 'g', 'g', 'k', 'n', 't', 'm', 'w', 'a', 'p']
-  };
-  var RUST = {
-    re: /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*")|(#\[[^\]]*\])|(\b(?:fn|let|mut|pub|use|for|in|if|else|match|impl|struct|enum|return|self|Self|crate|mod|where|as|ref|move|true|false|while|loop|break|continue|type|const|static|unsafe|dyn|trait)\b)|(\b\d[\d_]*(?:\.\d+)?\b)|(\b[A-Z]\w*\b)|(\b[a-z_]\w*!)|(\b[a-z_]\w*(?=\s*\())|(->|=>|[{}()[\],;:.|&=+\-*/<>!?])/g,
-    cls: ['c', 's', 'l', 'k', 'n', 't', 'm', 'w', 'p']
-  };
-  function paint(lang, src) {
-    var re = lang.re, out = '', last = 0, m;
-    re.lastIndex = 0;
-    while ((m = re.exec(src))) {
-      if (m.index > last) out += esc(src.slice(last, m.index));
-      for (var g = 1; g < m.length; g++) if (m[g] !== undefined) break;
-      out += '<span class="t-' + lang.cls[g - 1] + '">' + esc(m[0]) + '</span>';
-      last = re.lastIndex;
-      if (!m[0].length) re.lastIndex++;
-    }
-    return out + esc(src.slice(last));
-  }
-  XRUNE.hl = { dsl: function (s) { return paint(DSL, s); }, rust: function (s) { return paint(RUST, s); } };
+  var esc = XRUNE.hl.esc;
 
   var root = document.getElementById('forge');
   if (!root) return;
